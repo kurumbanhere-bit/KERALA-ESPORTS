@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KERALA ESPORTS - Signup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- FIREBASE SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+body{margin:0;font-family:Arial;background:#fff;}
+.container{max-width:400px;margin:auto;padding:25px;}
+h1{text-align:center;color:#0fa958;}
+
+.input-box{
+ background:#f3f3f3;
+ padding:15px;
+ border-radius:30px;
+ margin-bottom:18px;
+ position:relative;
+}
+.input-box input{
+ border:none;background:none;outline:none;width:100%;font-size:16px;
+}
+.show-pass{
+ position:absolute;
+ right:15px;top:50%;
+ transform:translateY(-50%);
+ cursor:pointer;color:#0fa958;font-weight:bold;
+}
+.btn{
+ width:100%;
+ padding:15px;
+ border:none;border-radius:30px;
+ background:#0fa958;
+ color:#fff;font-size:18px;font-weight:bold;
+}
+#msg,#otpMsg{
+ text-align:center;
+ margin-top:12px;
+ font-weight:bold;
+}
+
+/* OTP POPUP */
+.popup{
+ position:fixed;
+ top:0;left:0;
+ width:100%;height:100%;
+ background:rgba(0,0,0,.5);
+ display:none;
+ justify-content:center;
+ align-items:center;
+}
+.popup-box{
+ background:#fff;
+ width:300px;
+ padding:25px;
+ border-radius:20px;
+ text-align:center;
+ position:relative;
+}
+.popup-box input{
+ width:100%;
+ padding:12px;
+ border-radius:25px;
+ border:1px solid #ccc;
+ margin:15px 0;
+ text-align:center;
+ font-size:18px;
+}
+.back-btn{
+ font-size:28px;
+ cursor:pointer;
+ color:#0fa958;
+ position:absolute;
+ top:15px;
+ left:15px;
+}
+.resend{
+ margin-top:10px;
+ color:#0fa958;
+ font-weight:bold;
+ cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>SIGN UP</h1>
+
+<div class="input-box">
+<input type="text" id="fname" placeholder="First Name">
+</div>
+
+<div class="input-box">
+<input type="text" id="lname" placeholder="Last Name">
+</div>
+
+<div class="input-box">
+<input type="text" id="username" placeholder="Username">
+</div>
+
+<div class="input-box">
+<input type="email" id="email" placeholder="Email (only Gmail)">
+</div>
+
+<div class="input-box">
+<input type="password" id="pass" placeholder="Password">
+<span class="show-pass" onclick="togglePass()">SHOW</span>
+</div>
+
+<button class="btn" onclick="signup()">SIGN UP</button>
+<div id="msg"></div>
+
+</div>
+
+<!-- OTP POPUP -->
+<div class="popup" id="otpPopup">
+<div class="popup-box">
+
+<div class="back-btn" onclick="closeOTP()">⬅</div>
+
+<h3>Enter OTP</h3>
+
+<input type="number" id="otpInput" placeholder="Enter OTP">
+
+<button class="btn" onclick="verifyOTP()">VERIFY</button>
+
+<div class="resend" onclick="resendOTP()">Resend OTP</div>
+
+<div id="otpMsg"></div>
+
+</div>
+</div>
+
+<script>
+// 🔥 FIREBASE CONFIG
+const firebaseConfig = {
+ apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
+ authDomain: "kl-esports.firebaseapp.com",
+ databaseURL: "https://kl-esports-default-rtdb.firebaseio.com",
+ projectId: "kl-esports",
+ storageBucket: "kl-esports.appspot.com",
+ messagingSenderId: "440301376580",
+ appId: "1:440301376580:web:fb0b8ae0df3fe096bd1811"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+let realOTP="";
+
+/* SHOW / HIDE PASSWORD */
+function togglePass(){
+ let p=document.getElementById("pass");
+ let b=document.querySelector(".show-pass");
+ if(p.type==="password"){p.type="text";b.innerText="HIDE";}
+ else{p.type="password";b.innerText="SHOW";}
+}
+
+/* CLOSE OTP */
+function closeOTP(){
+ document.getElementById("otpPopup").style.display="none";
+}
+
+/* SIGNUP */
+function signup(){
+
+ let fname=fnameValue();
+ let lname=lnameValue();
+ let user=usernameValue();
+ let email=emailValue();
+ let pass=passValue();
+ let msg=document.getElementById("msg");
+
+ msg.style.color="red";
+
+ if(fname==""||lname==""||user==""||email==""||pass==""){
+  msg.innerHTML="Please fill all fields";
+  return;
+ }
+
+ if(!email.endsWith("@gmail.com")){
+  msg.innerHTML="Please enter valid email";
+  return;
+ }
+
+ if(pass.length<8 || pass.length>20){
+  msg.innerHTML="Password must be 8-20 characters";
+  return;
+ }
+
+ // CHECK EMAIL EXISTS
+ auth.fetchSignInMethodsForEmail(email)
+ .then(methods=>{
+   if(methods.length>0){
+     msg.innerHTML="Email already signed";
+   }else{
+     msg.style.color="green";
+     msg.innerHTML="Sending OTP...";
+     sendOTP(email);
+   }
+ });
+
+}
+
+/* SEND OTP */
+function sendOTP(email){
+ fetch("https://script.google.com/macros/s/AKfycbzRs8hNcAUdVX06buCumxVKi2Qx76PX_Bjon1FkCkgQg8bb6bM2PwoJgUafQF9rrAgr3A/exec?email="+encodeURIComponent(email))
+ .then(res=>res.json())
+ .then(data=>{
+  if(data.status=="success"){
+   realOTP=data.otp;
+   document.getElementById("otpPopup").style.display="flex";
+   document.getElementById("msg").innerHTML="";
+  }else{
+   document.getElementById("msg").innerHTML="OTP send failed";
+  }
+ });
+}
+
+/* RESEND OTP */
+function resendOTP(){
+ document.getElementById("otpMsg").innerHTML="Resending OTP...";
+ sendOTP(emailValue());
+}
+
+/* VERIFY OTP */
+function verifyOTP(){
+
+ let entered=document.getElementById("otpInput").value;
+ let otpMsg=document.getElementById("otpMsg");
+
+ if(entered==realOTP){
+
+ auth.createUserWithEmailAndPassword(emailValue(),passValue())
+ .then((cred)=>{
+
+ let uid=cred.user.uid;
+
+ db.ref("users/"+uid).set({
+  firstname: fnameValue(),
+  lastname: lnameValue(),
+  username: usernameValue(),
+  email: emailValue()
+ });
+
+ otpMsg.style.color="green";
+ otpMsg.innerHTML="Signup Successful ✔";
+
+ setTimeout(()=>{window.location.href="index.html";},1000);
+
+ })
+ .catch(err=>{
+  otpMsg.style.color="red";
+  if(err.code==="auth/email-already-in-use"){
+    otpMsg.innerHTML="Email already signed";
+  }else{
+    otpMsg.innerHTML=err.message;
+  }
+ });
+
+ }else{
+  otpMsg.style.color="red";
+  otpMsg.innerHTML="Wrong OTP";
+ }
+}
+
+/* GET VALUES */
+function fnameValue(){return document.getElementById("fname").value.trim();}
+function lnameValue(){return document.getElementById("lname").value.trim();}
+function usernameValue(){return document.getElementById("username").value.trim();}
+function emailValue(){return document.getElementById("email").value.trim();}
+function passValue(){return document.getElementById("pass").value.trim();}
+
+</script>
+
+</body>
+</html>
