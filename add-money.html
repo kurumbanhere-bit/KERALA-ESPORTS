@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Add Money - KERALA ESPORTS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f9f9f9; color: #333; }
+    .top-bar { display: flex; align-items: center; padding: 15px; background: white; font-weight: bold; border-bottom: 1px solid #eee; }
+    .top-bar i { margin-right: 15px; cursor: pointer; color: #0fa958; }
+    
+    .container { padding: 20px; text-align: center; }
+    .upi-box { background: white; padding: 20px; border-radius: 15px; border: 2px dashed #0fa958; margin-bottom: 20px; }
+    .upi-id { font-size: 18px; font-weight: bold; color: #0fa958; margin: 10px 0; display: block; }
+    
+    .instruction { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.5; }
+    
+    .input-group { text-align: left; margin-bottom: 15px; }
+    .input-group label { display: block; font-size: 13px; margin-bottom: 5px; font-weight: bold; }
+    .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+    
+    .submit-btn { width: 100%; padding: 15px; background: #0fa958; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    .loader { display: none; margin-top: 10px; color: #0fa958; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+    <i class="fa-solid fa-arrow-left" onclick="history.back()"></i>
+    Add Money (UPI)
+</div>
+
+<div class="container">
+    <div class="upi-box">
+        <p style="margin:0; font-size: 14px;">Pay to this UPI ID</p>
+        <span class="upi-id">keralaesport@ybl</span> <button onclick="copyUPI()" style="background:#eee; border:none; padding:5px 10px; border-radius:5px; font-size:12px;">Copy ID</button>
+    </div>
+
+    <p class="instruction">
+        <b>Steps:</b><br>
+        1. Copy the UPI ID & Pay using GPay/PhonePe.<br>
+        2. Copy the 12-digit <b>UTR / Transaction ID</b>.<br>
+        3. Enter the amount and UTR below & Submit.
+    </p>
+
+    <div class="input-group">
+        <label>Amount (₹)</label>
+        <input type="number" id="amount" placeholder="Enter Amount Paid">
+    </div>
+
+    <div class="input-group">
+        <label>Transaction ID (UTR)</label>
+        <input type="text" id="utr" placeholder="12 Digit UTR Number">
+    </div>
+
+    <button class="submit-btn" id="subBtn" onclick="submitRequest()">Submit Request</button>
+    <div id="loader" class="loader"><i class="fa-solid fa-circle-notch fa-spin"></i> Submitting...</div>
+</div>
+
+<script>
+const firebaseConfig = {
+ apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
+ authDomain: "kl-esports.firebaseapp.com",
+ databaseURL: "https://kl-esports-default-rtdb.firebaseio.com",
+ projectId: "kl-esports",
+ storageBucket: "kl-esports.appspot.com",
+ messagingSenderId: "440301376580",
+ appId: "1:440301376580:web:fb0b8ae0df3fe096bd1811"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+function copyUPI() {
+    navigator.clipboard.writeText("keralaesport@ybl"); // 👈 Ivideyum UPI ID maattuka
+    alert("UPI ID Copied!");
+}
+
+function submitRequest() {
+    const amt = document.getElementById("amount").value;
+    const utr = document.getElementById("utr").value;
+    const btn = document.getElementById("subBtn");
+    const loader = document.getElementById("loader");
+
+    if(!amt || !utr) { alert("Please fill all details!"); return; }
+    if(utr.length < 10) { alert("Enter a valid UTR number!"); return; }
+
+    btn.style.display = "none";
+    loader.style.display = "block";
+
+    const user = auth.currentUser;
+    const requestData = {
+        uid: user.uid,
+        email: user.email,
+        amount: amt,
+        utr: utr,
+        status: "pending",
+        timestamp: Date.now()
+    };
+
+    // Firebase-ile "payment_requests" node-ilekk data ayakkunnu
+    db.ref("payment_requests").push(requestData).then(() => {
+        alert("Request Submitted! Balance will be added after verification.");
+        window.location.href = "wallet.html";
+    }).catch(err => {
+        alert("Error: " + err.message);
+        btn.style.display = "block";
+        loader.style.display = "none";
+    });
+}
+</script>
+</body>
+</html>

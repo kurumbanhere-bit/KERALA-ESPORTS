@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Wallet - KERALA ESPORTS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f8f9fa; color: #333; }
+    
+    /* Header */
+    .top-bar { 
+        display: flex; align-items: center; padding: 15px; 
+        background: white; font-weight: bold; font-size: 18px; 
+        border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100;
+    }
+    .top-bar i { margin-right: 15px; cursor: pointer; color: #0fa958; font-size: 20px; }
+
+    /* Wallet Card */
+    .wallet-card { 
+        background: linear-gradient(135deg, #0fa958, #0b8a47); 
+        margin: 20px; padding: 35px 20px; border-radius: 20px; 
+        color: white; text-align: center;
+        box-shadow: 0 10px 25px rgba(15, 169, 88, 0.25);
+    }
+    .balance-label { font-size: 14px; opacity: 0.9; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+    .balance-amount { font-size: 42px; font-weight: bold; }
+
+    /* Action Buttons */
+    .action-row { 
+        display: flex; justify-content: space-around; 
+        padding: 0 20px; gap: 15px; margin-top: -10px; 
+    }
+    .action-btn { 
+        flex: 1; padding: 18px; border-radius: 15px; border: none; 
+        font-weight: bold; cursor: pointer; display: flex; 
+        flex-direction: column; align-items: center; gap: 10px;
+        transition: 0.3s; font-size: 14px; background: white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .add-btn i { color: #0fa958; font-size: 22px; }
+    .withdraw-btn i { color: #ff4d4d; font-size: 22px; }
+    .action-btn:active { transform: scale(0.95); }
+
+    /* Transaction History Section */
+    .history-container { padding: 30px 20px; }
+    .history-header { 
+        display: flex; justify-content: space-between; 
+        align-items: center; margin-bottom: 20px; 
+    }
+    .history-header h3 { margin: 0; font-size: 17px; color: #444; }
+    
+    .transaction-list { background: white; border-radius: 15px; padding: 10px; }
+    .empty-state { 
+        text-align: center; padding: 50px 0; color: #bbb; 
+        font-size: 14px; line-height: 1.6;
+    }
+    .empty-state i { font-size: 45px; margin-bottom: 15px; opacity: 0.3; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+    <i class="fa-solid fa-arrow-left" onclick="window.location.href='dashboard.html'"></i>
+    My Wallet
+</div>
+
+<div class="wallet-card">
+    <div class="balance-label">Total Balance</div>
+    <div class="balance-amount" id="balanceDisplay">₹0</div>
+</div>
+
+<div class="action-row">
+    <button class="action-btn" onclick="window.location.href='add-money.html'">
+        <i class="fa-solid fa-circle-plus"></i>
+        <span>Add Money</span>
+    </button>
+    <button class="action-btn" onclick="window.location.href='withdraw.html'">
+        <i class="fa-solid fa-building-columns"></i>
+        <span>Withdraw</span>
+    </button>
+</div>
+
+<div class="history-container">
+    <div class="history-header">
+        <h3>Transaction History</h3>
+        <i class="fa-solid fa-sliders" style="color: #888;"></i>
+    </div>
+    
+    <div class="transaction-list">
+        <div class="empty-state">
+            <i class="fa-solid fa-receipt"></i><br>
+            No transactions found.<br>
+            Add money to start playing!
+        </div>
+    </div>
+</div>
+
+<script>
+// 🔥 FIREBASE CONFIG
+const firebaseConfig = {
+ apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
+ authDomain: "kl-esports.firebaseapp.com",
+ databaseURL: "https://kl-esports-default-rtdb.firebaseio.com",
+ projectId: "kl-esports",
+ storageBucket: "kl-esports.appspot.com",
+ messagingSenderId: "440301376580",
+ appId: "1:440301376580:web:fb0b8ae0df3fe096bd1811"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+// Get Wallet Balance Real-time
+auth.onAuthStateChanged(user => {
+    if(user) {
+        // Dashboard style loop to handle UID issues
+        db.ref("users").on('value', snapshot => {
+            const allUsers = snapshot.val();
+            let myData = null;
+
+            for (let key in allUsers) {
+                if (key.includes(user.uid)) {
+                    myData = allUsers[key];
+                    break;
+                }
+            }
+
+            if(myData) {
+                const balance = myData.wallet || 0;
+                document.getElementById("balanceDisplay").innerText = "₹" + balance;
+            }
+        });
+    } else {
+        window.location.href = "login.html";
+    }
+});
+</script>
+
+</body>
+</html>

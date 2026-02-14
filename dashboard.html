@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KERALA ESPORTS - Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+body{ margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#f5fff9; overflow-x:hidden; }
+.header{ display:flex; justify-content:space-between; align-items:center; padding:15px 20px; background:white; box-shadow:0 2px 5px rgba(0,0,0,0.1); position:sticky; top:0; z-index:100; }
+.header-left{ display:flex; align-items:center; gap:12px; }
+.header-left img{ width:45px; height:45px; border-radius:50%; cursor:pointer; object-fit:cover; border:2px solid #0fa958; background:#222; }
+.header-left span{ font-weight:bold; font-size:16px; color:#333; }
+.header-right{ display:flex; align-items:center; gap:15px; }
+.wallet-box{ font-weight:bold; font-size:16px; color:#0fa958; background:#e0f7e9; padding:6px 15px; border-radius:20px; }
+.logout-btn{ color: #ff4d4d; font-size: 20px; cursor: pointer; transition: 0.3s; }
+.logout-btn:hover{ transform: scale(1.1); }
+
+.categories{ display:flex; overflow-x:auto; padding:15px 10px; gap:12px; background:white; margin-top:5px; scrollbar-width: none; }
+.category{ flex:0 0 auto; padding:8px 18px; border-radius:20px; background:#f0f0f0; color:#555; font-weight:bold; font-size:13px; cursor:pointer; }
+.matches{ padding:80px 20px; text-align:center; color:#bbb; }
+.bottom-nav{ display:flex; justify-content:space-around; align-items:center; position:fixed; bottom:0; width:100%; background:white; padding:12px 0; box-shadow:0 -2px 10px rgba(0,0,0,0.05); }
+.bottom-nav div{ display:flex; flex-direction:column; align-items:center; color:#888; cursor:pointer; font-size:11px; gap:4px; }
+.bottom-nav i{ font-size:20px; }
+.bottom-nav .active{ color:#0fa958; }
+</style>
+</head>
+<body>
+
+<div class="header">
+ <div class="header-left">
+   <img id="profilePic" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Profile" onclick="goProfile()">
+   <span id="usernameDisplay">Loading...</span>
+ </div>
+ <div class="header-right">
+   <div class="wallet-box" id="walletAmount">₹0</div>
+   <i class="fa-solid fa-right-from-bracket logout-btn" onclick="logoutUser()" title="Logout"></i>
+ </div>
+</div>
+
+<div class="categories">
+ <div class="category">BR PER KILL</div>
+ <div class="category">BR SURVIVAL</div>
+ <div class="category">CS HEADSHOT</div>
+ <div class="category">CLASH SQUAD</div>
+ <div class="category">LONE WOLF</div>
+</div>
+
+<div class="matches">
+ <i class="fa-solid fa-trophy" style="font-size:50px; color:#eee; margin-bottom:15px;"></i><br>
+ No matches available
+ <p style="font-size:14px; color:#999;">Check back in a while for new tournaments!</p>
+</div>
+
+<div class="bottom-nav">
+ <div onclick="goHome()" class="active"><i class="fa-solid fa-house"></i>Home</div>
+ <div onclick="goMyMatches()"><i class="fa-solid fa-gamepad"></i>Matches</div>
+ <div onclick="goMissions()"><i class="fa-solid fa-tasks"></i>Tasks</div>
+ <div onclick="goWallet()"><i class="fa-solid fa-wallet"></i>Wallet</div>
+ <div onclick="goLeaderboard()"><i class="fa-solid fa-ranking-star"></i>Rank</div>
+</div>
+
+<script>
+// 🔥 FIREBASE CONFIG
+const firebaseConfig = {
+ apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
+ authDomain: "kl-esports.firebaseapp.com",
+ databaseURL: "https://kl-esports-default-rtdb.firebaseio.com",
+ projectId: "kl-esports",
+ storageBucket: "kl-esports.appspot.com",
+ messagingSenderId: "440301376580",
+ appId: "1:440301376580:web:fb0b8ae0df3fe096bd1811"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+// NAVIGATION
+function goProfile(){ window.location.href="profile.html"; }
+function goHome(){ window.location.href="dashboard.html"; }
+function goMyMatches(){ window.location.href="my-matches.html"; }
+function goMissions(){ window.location.href="missions.html"; }
+function goWallet(){ window.location.href="wallet.html"; }
+function goLeaderboard(){ window.location.href="leaderboard.html"; }
+
+// LOGOUT FUNCTION
+function logoutUser() {
+    if(confirm("Logout cheyyanam ennurappano?")) {
+        auth.signOut().then(() => {
+            window.location.href = "login.html";
+        }).catch((error) => {
+            alert("Logout error: " + error.message);
+        });
+    }
+}
+
+// USER DATA FETCH
+auth.onAuthStateChanged(user => {
+ if(user){
+   // All users database check to avoid Dash (-) UID issue
+   db.ref("users").on('value', snapshot => {
+     const allUsers = snapshot.val();
+     let userData = null;
+
+     for (let key in allUsers) {
+       if (key === user.uid || key === "-" + user.uid) {
+         userData = allUsers[key];
+         break;
+       }
+     }
+
+     const defaultIcon = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+     
+     if(userData) {
+       // STRICT USERNAME ONLY
+       document.getElementById("usernameDisplay").innerText = userData.username || "No Username";
+       document.getElementById("walletAmount").innerText = "₹" + (userData.wallet || 0);
+       document.getElementById("profilePic").src = userData.profilePic || defaultIcon;
+     } else {
+       document.getElementById("usernameDisplay").innerText = user.email.split('@')[0];
+     }
+   });
+ } else {
+   window.location.href = "login.html";
+ }
+});
+</script>
+
+</body>
+</html>
