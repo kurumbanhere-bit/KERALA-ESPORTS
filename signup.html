@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KERALA ESPORTS - Signup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+:root { --primary: #0fa958; --bg: #ffffff; --surface: #f4f7f5; }
+body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg); color: #333; }
+
+/* LOADER STYLES */
+#loader {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #ffffff; display: flex; justify-content: center; align-items: center;
+    z-index: 10001;
+}
+.spinner {
+    width: 40px; height: 40px;
+    border: 4px solid #f3f3f3; border-top: 4px solid var(--primary);
+    border-radius: 50%; animation: spin 1s linear infinite;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.container { max-width:400px; margin:auto; padding:40px 25px; text-align: center; }
+h1 { color: var(--primary); font-weight: 800; margin-bottom: 30px; font-size: 28px; }
+
+.input-box { 
+    background: var(--surface); padding:15px 20px; border-radius:15px; 
+    margin-bottom:15px; position:relative; border: 1px solid #eee; transition: 0.3s;
+}
+.input-box:focus-within { border-color: var(--primary); background: #fff; }
+.input-box input { border:none; background:none; width:100%; font-size:16px; outline:none; color: #333; }
+
+.show-pass { position:absolute; right:20px; top:50%; transform:translateY(-50%); cursor:pointer; color: var(--primary); font-weight:bold; font-size:11px; }
+
+.btn { 
+    width:100%; padding:16px; border:none; border-radius:15px; 
+    background: var(--primary); color:white; font-size:16px; font-weight:bold; 
+    cursor:pointer; box-shadow: 0 4px 15px rgba(15, 169, 88, 0.2); transition: 0.2s;
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+
+#msg { margin-top:15px; font-size: 14px; font-weight: 600; min-height: 20px; }
+
+/* OTP POPUP */
+.popup { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255, 255, 255, 0.98); display:none; justify-content:center; align-items:center; z-index: 10000; }
+.popup-box { background:#fff; width:85%; max-width:320px; padding:35px 25px; border-radius:30px; text-align:center; box-shadow: 0 10px 40px rgba(0,0,0,0.1); position:relative; }
+.popup-box input { width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin:20px 0; text-align:center; font-size:20px; font-weight: bold; background: var(--surface); outline: none; }
+.popup-box input:focus { border-color: var(--primary); background: #fff; }
+.back-btn { font-size:20px; cursor:pointer; color: var(--primary); position:absolute; top:20px; left:20px; }
+.resend { margin-top:15px; color: var(--primary); font-weight:bold; cursor:pointer; font-size: 13px; }
+
+.login-link { margin-top: 30px; color: #888; font-size: 14px; }
+.login-link span { color: var(--primary); font-weight: bold; cursor: pointer; }
+</style>
+</head>
+
+<body>
+
+<div id="loader"><div class="spinner"></div></div>
+
+<div class="container">
+    <h1>Create Account</h1>
+
+    <div class="input-box"><input type="text" id="fname" placeholder="First Name"></div>
+    <div class="input-box"><input type="text" id="lname" placeholder="Last Name"></div>
+    <div class="input-box"><input type="text" id="username" placeholder="Username"></div>
+    <div class="input-box"><input type="email" id="email" placeholder="Email (Gmail only)"></div>
+    <div class="input-box">
+        <input type="password" id="pass" placeholder="Password">
+        <span class="show-pass" onclick="togglePass()">SHOW</span>
+    </div>
+
+    <button class="btn" id="signupBtn" onclick="signup()">SIGN UP</button>
+    <div id="msg"></div>
+
+    <div class="login-link">Already have an account? <span onclick="location.href='index.html'">Login</span></div>
+</div>
+
+<div class="popup" id="otpPopup">
+    <div class="popup-box">
+        <div class="back-btn" onclick="closeOTP()"><i class="fa-solid fa-arrow-left"></i></div>
+        <h3 style="margin-bottom: 5px;">Verify Email</h3>
+        <p style="font-size: 12px; color: #888;">Enter the OTP sent to your Gmail</p>
+        <input type="number" id="otpInput" placeholder="0 0 0 0 0 0">
+        <button class="btn" id="verifyBtn" onclick="verifyOTP()">VERIFY & REGISTER</button>
+        <div class="resend" onclick="resendOTP()">Resend OTP</div>
+        <div id="otpMsg" style="margin-top: 10px; font-weight: bold; font-size: 13px;"></div>
+    </div>
+</div>
+
+<script>
+// LOADER LOGIC
+window.addEventListener("load", () => {
+    setTimeout(() => { document.getElementById("loader").style.display = "none"; }, 600);
+});
+
+/* 🔥 FIREBASE CONFIG */
+const firebaseConfig = {
+ apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
+ authDomain: "kl-esports.firebaseapp.com",
+ databaseURL: "https://kl-esports-default-rtdb.firebaseio.com",
+ projectId: "kl-esports",
+ storageBucket: "kl-esports.appspot.com",
+ messagingSenderId: "440301376580",
+ appId: "1:440301376580:web:fb0b8ae0df3fe096bd1811"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+let realOTP="";
+
+function togglePass(){
+    let p=document.getElementById("pass");
+    let b=document.querySelector(".show-pass");
+    if(p.type==="password"){p.type="text";b.innerText="HIDE";}
+    else{p.type="password";b.innerText="SHOW";}
+}
+
+function closeOTP(){ document.getElementById("otpPopup").style.display="none"; }
+
+function signup(){
+    let fname=fnameValue(), lname=lnameValue(), user=usernameValue(), email=emailValue(), pass=passValue();
+    let msg=document.getElementById("msg");
+    let btn=document.getElementById("signupBtn");
+
+    if(!fname||!lname||!user||!email||!pass){
+        msg.style.color="red"; msg.innerHTML="Please fill all fields"; return;
+    }
+    if(!email.endsWith("@gmail.com")){
+        msg.style.color="red"; msg.innerHTML="Use a valid Gmail address"; return;
+    }
+    if(pass.length < 8){
+        msg.style.color="red"; msg.innerHTML="Password min 8 characters"; return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Checking...";
+    msg.style.color="var(--primary)";
+    msg.innerHTML="Validating...";
+
+    auth.fetchSignInMethodsForEmail(email)
+    .then(methods=>{
+        if(methods.length>0){
+            msg.style.color="red";
+            msg.innerHTML="Email already registered";
+            btn.disabled = false;
+            btn.innerText = "SIGN UP";
+        }else{
+            msg.innerHTML="Sending OTP...";
+            sendOTP(email);
+        }
+    });
+}
+
+function sendOTP(email){
+    fetch("https://script.google.com/macros/s/AKfycbzRs8hNcAUdVX06buCumxVKi2Qx76PX_Bjon1FkCkgQg8bb6bM2PwoJgUafQF9rrAgr3A/exec?email="+encodeURIComponent(email))
+    .then(res=>res.json())
+    .then(data=>{
+        if(data.status=="success"){
+            realOTP=data.otp;
+            document.getElementById("otpPopup").style.display="flex";
+            document.getElementById("msg").innerHTML="";
+            document.getElementById("signupBtn").disabled = false;
+            document.getElementById("signupBtn").innerText = "SIGN UP";
+        }else{
+            document.getElementById("msg").style.color="red";
+            document.getElementById("msg").innerHTML="OTP failed. Try again.";
+            document.getElementById("signupBtn").disabled = false;
+        }
+    });
+}
+
+function resendOTP(){
+    document.getElementById("otpMsg").innerHTML="Resending...";
+    sendOTP(emailValue());
+}
+
+function verifyOTP(){
+    let entered=document.getElementById("otpInput").value;
+    let otpMsg=document.getElementById("otpMsg");
+    let vBtn=document.getElementById("verifyBtn");
+
+    if(entered==realOTP){
+        vBtn.disabled = true;
+        vBtn.innerText = "Creating Account...";
+        
+        auth.createUserWithEmailAndPassword(emailValue(),passValue())
+        .then((cred)=>{
+            db.ref("users/"+cred.user.uid).set({
+                firstname: fnameValue(),
+                lastname: lnameValue(),
+                username: usernameValue(),
+                email: emailValue(),
+                wallet: 0, // Default wallet balance
+                joinedMatches: 0
+            }).then(() => {
+                otpMsg.style.color="green";
+                otpMsg.innerHTML="Account Created! ✔";
+                setTimeout(()=>{window.location.href="index.html";},1500);
+            });
+        })
+        .catch(err=>{
+            vBtn.disabled = false;
+            vBtn.innerText = "VERIFY & REGISTER";
+            otpMsg.style.color="red";
+            otpMsg.innerHTML=err.message;
+        });
+    }else{
+        otpMsg.style.color="red";
+        otpMsg.innerHTML="Invalid OTP code";
+    }
+}
+
+function fnameValue(){return document.getElementById("fname").value.trim();}
+function lnameValue(){return document.getElementById("lname").value.trim();}
+function usernameValue(){return document.getElementById("username").value.trim();}
+function emailValue(){return document.getElementById("email").value.trim();}
+function passValue(){return document.getElementById("pass").value.trim();}
+</script>
+
+</body>
+</html>

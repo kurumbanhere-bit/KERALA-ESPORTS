@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Wallet - KERALA ESPORTS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+    :root { --p-green: #0fa958; --bg-light: #f8fbf9; }
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-light); color: #333; padding-bottom: 30px; }
+    
+    /* LOADER STYLES */
+    #loader {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #ffffff; display: flex; justify-content: center; align-items: center;
+        z-index: 10000;
+    }
+    .spinner {
+        width: 40px; height: 40px;
+        border: 4px solid #f3f3f3; border-top: 4px solid var(--p-green);
+        border-radius: 50%; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Header */
+    .top-bar { 
+        display: flex; align-items: center; padding: 15px; 
+        background: white; font-weight: bold; font-size: 17px; 
+        border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100;
+    }
+    .top-bar i { margin-right: 15px; cursor: pointer; color: var(--p-green); font-size: 20px; }
+
+    /* Wallet Card */
+    .wallet-card { 
+        background: linear-gradient(135deg, #0fa958, #0b8a47); 
+        margin: 20px; padding: 40px 20px; border-radius: 25px; 
+        color: white; text-align: center;
+        box-shadow: 0 12px 25px rgba(15, 169, 88, 0.2);
+        animation: slideDown 0.5s ease;
+    }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .balance-label { font-size: 12px; opacity: 0.8; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+    .balance-amount { font-size: 45px; font-weight: 800; letter-spacing: -1px; }
+
+    /* Action Buttons */
+    .action-row { 
+        display: flex; justify-content: space-around; 
+        padding: 0 20px; gap: 15px; margin-top: -15px; 
+    }
+    .action-btn { 
+        flex: 1; padding: 20px; border-radius: 20px; border: 1px solid #f0f0f0; 
+        font-weight: 800; cursor: pointer; display: flex; 
+        flex-direction: column; align-items: center; gap: 8px;
+        transition: 0.3s; font-size: 13px; background: white;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+    }
+    .action-btn i { font-size: 24px; }
+    .action-btn:active { transform: scale(0.95); background: #fafafa; }
+
+    /* Transaction Styles */
+    .history-container { padding: 30px 20px; }
+    .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .history-header h3 { margin: 0; font-size: 16px; color: #222; font-weight: 800; }
+    
+    .transaction-list { animation: fadeIn 0.8s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    .history-card { 
+        background: white; border-radius: 18px; padding: 18px; margin-bottom: 12px; 
+        display: flex; justify-content: space-between; align-items: center; 
+        border: 1px solid #f2f2f2;
+    }
+    .tr-left { display: flex; flex-direction: column; gap: 4px; }
+    .tr-type { font-weight: 800; font-size: 14px; color: #333; }
+    .tr-date { font-size: 10px; color: #999; font-weight: 600; }
+    
+    .tr-right { text-align: right; }
+    .tr-amt { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+    
+    .tr-status { 
+        font-size: 9px; font-weight: 900; padding: 4px 10px; 
+        border-radius: 8px; text-transform: uppercase; display: inline-block;
+    }
+    .status-pending { color: #f39c12; background: #fff8e6; }
+    .status-success { color: #0fa958; background: #eafff2; }
+    .status-failed { color: #ff4d4d; background: #fff0f0; }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: #ccc; }
+    .empty-state i { font-size: 50px; margin-bottom: 15px; opacity: 0.3; }
+</style>
+</head>
+<body>
+
+<div id="loader"><div class="spinner"></div></div>
+
+<div class="top-bar">
+    <i class="fa-solid fa-arrow-left" onclick="window.location.href='dashboard.html'"></i>
+    MY WALLET
+</div>
+
+<div class="wallet-card">
+    <div class="balance-label">Available Balance</div>
+    <div class="balance-amount" id="balanceDisplay">₹0</div>
+</div>
+
+<div class="action-row">
+    <button class="action-btn" onclick="window.location.href='add-money.html'">
+        <i class="fa-solid fa-circle-plus" style="color:var(--p-green)"></i>
+        <span>Add Money</span>
+    </button>
+    <button class="action-btn" onclick="window.location.href='withdraw.html'">
+        <i class="fa-solid fa-arrow-up-right-from-square" style="color:#ff4d4d"></i>
+        <span>Withdraw</span>
+    </button>
+</div>
+
+<div class="history-container">
+    <div class="history-header">
+        <h3>Transaction History</h3>
+        <i class="fa-solid fa-clock-rotate-left" style="color: #bbb;"></i>
+    </div>
+    
+    <div id="transactionList" class="transaction-list">
+        <div class="empty-state">
+            <i class="fa-solid fa-receipt"></i><br>
+            <p>Loading your transactions...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// LOADER LOGIC
+window.addEventListener("load", () => {
+    setTimeout(() => { document.getElementById("loader").style.display = "none"; }, 600);
+});
+
+/* 🔥 FIREBASE CONFIG */
+const firebaseConfig = {
+ apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
+ authDomain: "kl-esports.firebaseapp.com",
+ databaseURL: "https://kl-esports-default-rtdb.firebaseio.com",
+ projectId: "kl-esports",
+ storageBucket: "kl-esports.appspot.com",
+ messagingSenderId: "440301376580",
+ appId: "1:440301376580:web:fb0b8ae0df3fe096bd1811"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+auth.onAuthStateChanged(user => {
+    if(user) {
+        // Balance Update (Direct Path for Speed)
+        db.ref("users/" + user.uid).on('value', snapshot => {
+            const myData = snapshot.val();
+            if(myData) {
+                document.getElementById("balanceDisplay").innerText = "₹" + (myData.wallet || 0);
+            }
+        });
+        loadHistory(user.uid);
+    } else {
+        window.location.href = "index.html";
+    }
+});
+
+async function loadHistory(uid) {
+    const listDiv = document.getElementById('transactionList');
+    
+    const depRef = db.ref("depositRequests").orderByChild("uid").equalTo(uid);
+    const witRef = db.ref("withdrawRequests").orderByChild("uid").equalTo(uid);
+
+    const [depSnap, witSnap] = await Promise.all([depRef.once("value"), witRef.once("value")]);
+    
+    let history = [];
+    if(depSnap.exists()) Object.values(depSnap.val()).forEach(i => history.push({...i, label: "Cash Deposit"}));
+    if(witSnap.exists()) Object.values(witSnap.val()).forEach(i => history.push({...i, label: "Cash Withdrawal"}));
+
+    history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    if(history.length > 0) {
+        listDiv.innerHTML = "";
+        history.forEach(data => {
+            let sClass = "status-pending";
+            let sText = data.status || "pending";
+
+            if(["approved", "completed", "success"].includes(sText.toLowerCase())) {
+                sClass = "status-success"; sText = "Success";
+            } else if(["rejected", "failed"].includes(sText.toLowerCase())) {
+                sClass = "status-failed"; sText = "Failed";
+            } else {
+                sText = "Pending";
+            }
+
+            const formattedTime = new Date(data.timestamp).toLocaleString('en-IN', { 
+                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true 
+            });
+
+            const card = document.createElement('div');
+            card.className = 'history-card';
+            card.innerHTML = `
+                <div class="tr-left">
+                    <span class="tr-type">${data.label}</span>
+                    <span class="tr-date">${formattedTime}</span>
+                </div>
+                <div class="tr-right">
+                    <div class="tr-amt" style="color: ${data.label.includes('Withdraw') ? '#ff4d4d' : '#0fa958'}">
+                        ${data.label.includes('Withdraw') ? '-' : '+'}₹${data.amount}
+                    </div>
+                    <span class="tr-status ${sClass}">${sText}</span>
+                </div>
+            `;
+            listDiv.appendChild(card);
+        });
+    } else {
+        listDiv.innerHTML = `
+            <div class="empty-state">
+                <i class="fa-solid fa- wallet"></i><br>
+                <p style="font-weight:700; color:#888;">No transactions yet</p>
+                <p style="font-size:12px;">Your deposits and withdrawals will appear here.</p>
+            </div>`;
+    }
+}
+</script>
+
+</body>
+</html>

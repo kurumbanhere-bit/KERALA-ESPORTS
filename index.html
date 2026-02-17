@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KERALA ESPORTS - Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+:root {
+    --primary: #0fa958;
+    --bg: #ffffff;
+    --surface: #f4f7f5;
+    --text-main: #333333;
+    --text-dim: #888888;
+}
+
+body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg); color: var(--text-main); }
+
+/* LOADER STYLES */
+#loader {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #ffffff; display: flex; justify-content: center; align-items: center;
+    z-index: 10001;
+}
+.spinner {
+    width: 40px; height: 40px;
+    border: 4px solid #f3f3f3; border-top: 4px solid var(--primary);
+    border-radius: 50%; animation: spin 1s linear infinite;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.container { max-width:400px; margin:auto; padding:60px 25px; text-align: center; animation: fadeIn 0.6s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+h1 { color: var(--text-main); font-weight: 800; margin-bottom: 5px; font-size: 28px; }
+h2 { color: var(--primary); margin-top: 0; font-size: 24px; font-weight: 900; margin-bottom: 40px; }
+
+.input-box { background: var(--surface); padding:16px 20px; border-radius:15px; margin-bottom:18px; position:relative; border: 1px solid #eee; transition: 0.3s; }
+.input-box:focus-within { border-color: var(--primary); background: #fff; }
+.input-box input { border:none; background:none; width:100%; font-size:16px; outline:none; color: var(--text-main); }
+
+.show-pass { position:absolute; right:20px; top:50%; transform:translateY(-50%); cursor:pointer; color: var(--primary); font-weight:bold; font-size:11px; letter-spacing: 1px; }
+
+.btn-login { 
+    width:100%; padding:16px; border:none; border-radius:15px; 
+    background: var(--primary); color:white; font-size:16px; font-weight:bold; 
+    cursor:pointer; box-shadow: 0 4px 15px rgba(15, 169, 88, 0.2); margin-top: 10px; transition: 0.2s;
+}
+.btn-login:active { transform: scale(0.98); }
+
+#error { text-align:center; margin-top:15px; font-size: 14px; font-weight: 600; min-height: 20px; }
+.forgot { text-align:right; color: var(--text-dim); font-size:13px; cursor:pointer; margin-bottom:20px; }
+.signup { text-align:center; margin-top:40px; color: var(--text-dim); font-size: 14px; }
+.signup span { color: var(--primary); font-weight:bold; cursor:pointer; }
+
+/* 18+ POLICY POPUP */
+.policy-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255, 255, 255, 0.98); z-index:10000; display:none; justify-content:center; align-items:center; }
+.policy-box { background: #ffffff; width:85%; max-width:320px; padding:35px 25px; border-radius:30px; text-align:center; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+.policy-icon { width:55px; height:55px; background: #ff4d4d; color:white; font-size:18px; font-weight:900; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; }
+.policy-box h3 { font-size: 20px; margin-bottom: 10px; }
+.policy-box p { font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 25px; }
+.btn-agree { background: var(--primary); color:white; border:none; padding:15px; border-radius:15px; width:100%; font-weight:bold; cursor:pointer; }
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+</head>
+
+<body>
+
+<div id="loader"><div class="spinner"></div></div>
+
+<div id="policyPopup" class="policy-overlay">
+    <div class="policy-box">
+        <div class="policy-icon">18+</div>
+        <h3>Age Verification</h3>
+        <p>This platform involves real money. Confirm you are 18+ to proceed to Kerala Esports.</p>
+        <button class="btn-agree" onclick="acceptPolicy()">I AGREE & CONTINUE</button>
+        <div style="margin-top: 15px; color: #ff4d4d; font-size: 13px; font-weight: bold; cursor: pointer;" onclick="window.close()">EXIT</div>
+    </div>
+</div>
+
+<div class="container">
+    <h1>Welcome to</h1>
+    <h2>KERALA ESPORTS</h2>
+
+    <div class="input-box">
+        <input type="email" id="email" placeholder="Email Address">
+    </div>
+
+    <div class="input-box">
+        <input type="password" id="password" placeholder="Password">
+        <span class="show-pass" onclick="toggleLoginPass()">SHOW</span>
+    </div>
+
+    <div class="forgot" onclick="openReset()">Forgot Password?</div>
+
+    <button class="btn-login" id="loginBtn" onclick="login()">LOGIN</button>
+
+    <div id="error"></div>
+
+    <div style="margin-top: 40px;">
+        <p style="font-size: 11px; color: #ccc; text-transform: uppercase; letter-spacing: 1px;">Customer Support</p>
+        <a href="https://t.me/keralaesport" style="color: var(--primary); font-size: 30px;"><i class="fa-brands fa-telegram"></i></a>
+    </div>
+
+    <div class="signup">
+        Don't have an account? <span onclick="goSignup()">Sign Up</span>
+    </div>
+</div>
+
+<script>
+// LOADER LOGIC
+window.addEventListener("load", () => {
+    setTimeout(() => { document.getElementById("loader").style.display = "none"; }, 600);
+});
+
+/* 🔥 FIREBASE CONFIG */
+const firebaseConfig = {
+ apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
+ authDomain: "kl-esports.firebaseapp.com",
+ projectId: "kl-esports",
+ storageBucket: "kl-esports.appspot.com",
+ messagingSenderId: "440301376580",
+ appId: "1:440301376580:web:fb0b8ae0df3fe096bd1811"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+/* 18+ POLICY LOGIC */
+document.addEventListener("DOMContentLoaded", () => {
+    if(!localStorage.getItem("ageVerified")) {
+        document.getElementById("policyPopup").style.display = "flex";
+    }
+});
+
+function acceptPolicy() {
+    localStorage.setItem("ageVerified", "true");
+    document.getElementById("policyPopup").style.display = "none";
+}
+
+/* AUTH LOGIC */
+auth.onAuthStateChanged(user => {
+    if(user) { window.location.href="dashboard.html"; }
+});
+
+function toggleLoginPass() {
+    let p = document.getElementById("password");
+    let s = document.querySelector(".show-pass");
+    if(p.type === "password") { p.type = "text"; s.innerText = "HIDE"; }
+    else { p.type = "password"; s.innerText = "SHOW"; }
+}
+
+function login() {
+    let email = document.getElementById("email").value.trim();
+    let pass = document.getElementById("password").value.trim();
+    let error = document.getElementById("error");
+    let btn = document.getElementById("loginBtn");
+
+    if(!email || !pass) {
+        error.style.color = "#ff4d4d";
+        error.innerHTML = "Please enter all fields";
+        return;
+    }
+
+    btn.innerText = "VERIFYING...";
+    btn.disabled = true;
+    error.style.color = "#0fa958";
+    error.innerHTML = "Connecting...";
+
+    auth.signInWithEmailAndPassword(email, pass)
+    .then(() => {
+        error.style.color = "green";
+        error.innerHTML = "Success! Redirecting...";
+        setTimeout(() => { window.location.href="dashboard.html"; }, 800);
+    })
+    .catch(err => {
+        btn.innerText = "LOGIN";
+        btn.disabled = false;
+        error.style.color = "#ff4d4d";
+        error.innerHTML = "Invalid email or password";
+    });
+}
+
+function goSignup() { window.location.href="signup.html"; }
+function openReset() { alert("Password reset link will be sent to your email."); }
+</script>
+
+</body>
+</html>
