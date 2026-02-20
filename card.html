@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Match Details - KL ESPORTS</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+    :root { --p-green: #0fa958; --bg-light: #f5fff9; --white: #ffffff; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --text-dark: #1a1a1a; --red: #ff4d4d; }
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-light); color: #333; padding-bottom: 90px; }
+    
+    .header { background: var(--white); padding: 15px; display: flex; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 5px rgba(0,0,0,0.05); }
+    .header i { font-size: 20px; color: var(--p-green); margin-right: 15px; cursor: pointer; }
+    .header span { font-size: 18px; font-weight: bold; }
+
+    .match-preview { background: var(--white); margin: 15px; padding: 20px; border-radius: 15px; border: 1px solid #eee; }
+    .m-title { font-size: 18px; font-weight: 800; text-transform: uppercase; }
+    .m-prize-main { font-size: 22px; font-weight: 900; color: var(--p-green); margin-top: 4px; }
+    .m-date { font-size: 11px; font-weight: 800; color: var(--red); margin-top: 8px; text-transform: uppercase; display: inline-block; background: #fff5f5; padding: 4px 8px; border-radius: 5px; }
+
+    /* ROOM CARD */
+    .room-card-white { background: var(--white); margin: 0 15px 15px 15px; padding: 18px; border-radius: 15px; border: 2px solid var(--p-green); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .room-title-label { font-size: 11px; color: #555; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .room-grid { display: flex; justify-content: space-between; gap: 10px; }
+    .room-item-box { flex: 1; background: #f9f9f9; padding: 12px; border-radius: 10px; border: 1px solid #f0f0f0; text-align: center; }
+    .room-label-small { font-size: 9px; color: #999; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; }
+    .room-value-text { font-size: 14px; font-weight: 800; color: #222; font-family: monospace; }
+
+    /* WINNER CARD UI */
+    .winner-header-label { font-size: 13px; font-weight: 800; text-align: center; color: #555; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 1px; }
+    .winner-card { background: white; margin: 0 15px 10px 15px; padding: 12px 15px; border-radius: 12px; border: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+    .win-rank { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: #000; border: 2px solid rgba(0,0,0,0.05); }
+    .rank-1 { background: var(--gold); }
+    .rank-2 { background: var(--silver); }
+    .rank-3 { background: var(--bronze); color: #fff; }
+    .rank-other { background: #eee; }
+
+    /* TAB UI */
+    .tabs { display: flex; background: #f0f0f0; margin: 15px; border-radius: 12px; padding: 4px; }
+    .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 700; color: #777; cursor: pointer; border-radius: 10px; }
+    .tab.active { background: white; color: var(--p-green); }
+
+    /* PLAYERS LIST UI */
+    .player-row { display: flex; align-items: center; gap: 15px; background: white; margin: 0 15px 10px 15px; padding: 12px; border-radius: 12px; border: 1px solid #eee; }
+    .player-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--p-green); background: #f0f0f0; }
+    .p-user-name { font-weight: 800; font-size: 14px; color: #222; }
+    .p-game-name { font-size: 11px; color: var(--p-green); font-weight: 700; text-transform: uppercase; }
+
+    /* RULES UI */
+    .rule-item { display: flex; gap: 12px; margin-bottom: 15px; align-items: flex-start; }
+    .rule-num { min-width: 24px; height: 24px; background: var(--p-green); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; }
+    .rule-text { font-size: 12.5px; color: #444; line-height: 1.5; }
+
+    .footer { position: fixed; bottom: 0; width: 100%; background: var(--white); padding: 15px 20px; box-sizing: border-box; border-top: 1px solid #eee; }
+    .btn-join { background: var(--p-green); color: var(--white); width: 100%; border: none; padding: 16px; border-radius: 12px; font-weight: 800; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <i class="fa-solid fa-arrow-left" onclick="history.back()"></i>
+    <span id="headerTitle">Match Details</span>
+</div>
+
+<div class="match-preview" id="commonMatchInfo">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <div class="m-title" id="mTitle">Loading...</div>
+            <div class="m-prize-main" id="mPrizeHeader">₹0</div>
+            <div id="mDate" class="m-date"></div>
+        </div>
+        <img src="" id="mThumb" style="width:75px; height:75px; border-radius:12px; object-fit: cover;">
+    </div>
+</div>
+
+<div class="room-card-white" id="roomInfoBox">
+    <div class="room-title-label"><i class="fa-solid fa-door-open" style="color:var(--p-green)"></i> Room Details</div>
+    <div class="room-grid">
+        <div class="room-item-box">
+            <div class="room-label-small">Room ID</div>
+            <div class="room-value-text" id="displayRoomId">Coming Soon</div>
+        </div>
+        <div class="room-item-box">
+            <div class="room-label-small">Password</div>
+            <div class="room-value-text" id="displayRoomPass">Coming Soon</div>
+        </div>
+    </div>
+</div>
+
+<div id="completedUI" style="display:none;">
+    <div class="winner-header-label">🏆 Tournament Results 🏆</div>
+    <div id="winnersList"></div>
+</div>
+
+<div id="activeTabsUI">
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('prize')">Prize Pool</div>
+        <div class="tab" onclick="showTab('players')">Players</div>
+        <div class="tab" onclick="showTab('rules')">Rules</div>
+    </div>
+    
+    <div id="prizeSection"><div id="prizeList" style="background:white; margin:0 15px; border-radius:12px; border:1px solid #eee;"></div></div>
+    
+    <div id="playerSection" style="display:none;"><div id="playerList"></div></div>
+    
+    <div id="rulesSection" style="display:none; padding: 20px; background: white; margin: 0 15px; border-radius: 12px; border: 1px solid #eee;">
+        <div class="rule-item"><div class="rule-num">1</div><div class="rule-text"><b>POV Required:</b> Start screen recording before entering room. Mandatory for every player.</div></div>
+        <div class="rule-item"><div class="rule-num">2</div><div class="rule-text"><b>Slot Change:</b> Will lead to <b>Kick & No Refund</b>. Stick to your assigned slot.</div></div>
+        <div class="rule-item"><div class="rule-num">3</div><div class="rule-text">Only mobile players allowed. Emulators/Panels are strictly banned. Minimum <b>Level 40</b> required.</div></div>
+        <div class="rule-item"><div class="rule-num">4</div><div class="rule-text"><b>Unregistered Invite:</b> If you invite anyone not in the match, you will be kicked without refund. Kill points won't count.</div></div>
+        <div class="rule-item"><div class="rule-num">5</div><div class="rule-text">ID & Password will be shared <b>10-15 mins</b> before start. Late joiners won't get a refund.</div></div>
+        <div class="rule-item"><div class="rule-num">6</div><div class="rule-text"><b>Fair Play:</b> Using Hacks, Configs, or Glitches will lead to <b>Account Ban + Wallet Freeze</b>.</div></div>
+        <div class="rule-item"><div class="rule-num">7</div><div class="rule-text">Results will be declared within 1 hour after match. Suspended matches will get full refund.</div></div>
+        <div class="rule-item"><div class="rule-num">8</div><div class="rule-text">Winners must be ready to provide POV if requested within 24 hours to claim the prize.</div></div>
+    </div>
+
+    <div class="footer" id="joinFooter"><button class="btn-join" onclick="handleJoin()">JOIN NOW</button></div>
+</div>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
+    authDomain: "kl-esports.firebaseapp.com",
+    databaseURL: "https://kl-esports-default-rtdb.firebaseio.com",
+    projectId: "kl-esports",
+    storageBucket: "kl-esports.appspot.com",
+    messagingSenderId: "440301376580",
+    appId: "1:440301376580:web:fb0b8ae0df3fe096bd1811"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+const matchId = new URLSearchParams(window.location.search).get('id');
+
+let entryFee = 0;
+let userWallet = 0;
+
+auth.onAuthStateChanged(user => {
+    if(user) {
+        db.ref("users").on('value', snap => {
+            const allUsers = snap.val();
+            for(let key in allUsers) {
+                if(key.includes(user.uid)) { userWallet = allUsers[key].wallet || 0; break; }
+            }
+        });
+    }
+});
+
+function formatMatchTime(dateStr) {
+    if(!dateStr) return "";
+    const date = new Date(dateStr);
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let hours = date.getHours(), minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    return `${date.getDate()} ${months[date.getMonth()]} | ${hours}:${minutes} ${ampm}`;
+}
+
+if(matchId) {
+    db.ref('matches/' + matchId).on('value', snap => {
+        const data = snap.val(); if(!data) return;
+
+        entryFee = data.fee || 0;
+        document.getElementById('mTitle').innerText = data.category;
+        document.getElementById('mPrizeHeader').innerText = "₹" + data.prize;
+        document.getElementById('mThumb').src = data.thumbnail;
+        document.getElementById('mDate').innerText = formatMatchTime(data.time);
+        document.getElementById('displayRoomId').innerText = data.roomId || "Coming Soon";
+        document.getElementById('displayRoomPass').innerText = data.roomPass || "Coming Soon";
+
+        if(data.status === "Completed" || data.status === "completed") {
+            document.getElementById('activeTabsUI').style.display = "none";
+            document.getElementById('roomInfoBox').style.display = "none";
+            document.getElementById('completedUI').style.display = "block";
+            let winHTML = "";
+            if(data.winners) {
+                Object.values(data.winners).sort((a,b)=>a.rank-b.rank).forEach(w => {
+                    let rClass = w.rank==1 ? 'rank-1' : (w.rank==2 ? 'rank-2' : (w.rank==3 ? 'rank-3' : 'rank-other'));
+                    winHTML += `<div class="winner-card"><div style="display:flex; align-items:center; gap:12px;"><div class="win-rank ${rClass}">${w.rank}</div><div><div style="font-weight:800;">${w.playerName}</div><div style="font-size:10px; color:#888;">KILLS: ${w.kills}</div></div></div><div style="font-weight:900; color:var(--p-green); font-size:16px;">₹${w.prize}</div></div>`;
+                });
+            } else { winHTML = "<div style='text-align:center; padding:20px; color:#999;'>Results updating...</div>"; }
+            document.getElementById('winnersList').innerHTML = winHTML;
+        }
+
+        let pl = "";
+        if(data.prizeDist) data.prizeDist.split(',').forEach(i => {
+            let p = i.split(':');
+            pl += `<div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #f8f8f8; font-weight:bold; font-size:14px;"><span>${p[0]}</span><span style="color:var(--p-green)">${p[1]}</span></div>`;
+        });
+        document.getElementById('prizeList').innerHTML = pl;
+    });
+}
+
+function showTab(type) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('prizeSection').style.display = type === 'prize' ? 'block' : 'none';
+    document.getElementById('playerSection').style.display = type === 'players' ? 'block' : 'none';
+    document.getElementById('rulesSection').style.display = type === 'rules' ? 'block' : 'none';
+    if(type === 'players') loadPlayers();
+}
+
+function loadPlayers() {
+    const listDiv = document.getElementById('playerList');
+    listDiv.innerHTML = "<div style='text-align:center; padding:20px; color:#999;'>Loading Players...</div>";
+    
+    db.ref('participants/' + matchId).on('value', snapshot => {
+        listDiv.innerHTML = "";
+        if(!snapshot.exists()) { 
+            listDiv.innerHTML = "<div style='text-align:center; padding:40px; color:#999;'>No players joined yet.</div>"; 
+            return; 
+        }
+        
+        snapshot.forEach(child => {
+            const part = child.val();
+            const uName = part.playerName || 'KL Player';
+            const ign = part.gameId || uName; 
+
+            // World Mix Avatar Logic
+            const worldMix = [
+                `https://api.dicebear.com/7.x/adventurer/svg?seed=${uName}`,
+                `https://api.dicebear.com/7.x/lorelei/svg?seed=${uName}`,
+                `https://api.dicebear.com/7.x/avataaars/svg?seed=${uName}`,
+                `https://api.dicebear.com/7.x/micah/svg?seed=${uName}`,
+                `https://api.dicebear.com/7.x/pixel-art/svg?seed=${uName}`,
+                `https://api.dicebear.com/7.x/bottts/svg?seed=${uName}`
+            ];
+
+            let img = part.profilePic;
+            
+            // If dummy and no pic, generate a variety pic for 6-8 players
+            if(!img && part.isDummy) {
+                // We use a simple hash of the name to consistently pick a style or default
+                const charCodeSum = uName.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+                if(charCodeSum % 3 === 0) { // Randomly gives pic to roughly 30% of dummies
+                    img = worldMix[charCodeSum % worldMix.length];
+                } else {
+                    img = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                }
+            } else if(!img) {
+                img = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            }
+
+            listDiv.innerHTML += `
+                <div class="player-row">
+                    <img src="${img}" class="player-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                    <div class="player-info">
+                        <div class="p-user-name">${uName}</div>
+                        <div class="p-game-name">IGN: ${ign}</div>
+                    </div>
+                </div>`;
+        });
+    });
+}
+
+function handleJoin() {
+    if(userWallet < entryFee) { alert("Insufficient Balance!"); window.location.href = "add-money.html"; }
+    else { window.location.href = "join-match.html?id=" + matchId; }
+}
+</script>
+</body>
+</html>
