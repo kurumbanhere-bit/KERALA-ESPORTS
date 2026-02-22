@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Withdraw Money - KL ESPORTS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+    :root { --red: #ff4d4d; --green: #0fa958; --bg: #f8fbf9; }
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #333; }
+    
+    .top-bar { display: flex; align-items: center; padding: 15px; background: white; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; }
+    .top-bar i { margin-right: 15px; cursor: pointer; color: var(--green); font-size: 20px; }
+    .top-bar b { font-size: 17px; }
+
+    .container { padding: 20px; }
+    .card { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .balance-box { background: #f0fff6; padding: 20px; border-radius: 18px; text-align: center; margin-bottom: 25px; border: 1px dashed var(--green); }
+    .balance-box span { font-size: 11px; color: #666; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+    .balance-box h2 { margin: 8px 0 0; color: var(--green); font-size: 32px; font-weight: 800; }
+
+    .input-group { margin-bottom: 22px; }
+    .input-group label { display: block; font-size: 12px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase; }
+    .input-group input { 
+        width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #f0f0f0; 
+        font-size: 16px; outline: none; box-sizing: border-box; transition: 0.3s; background: #fafafa;
+    }
+    .input-group input:focus { border-color: var(--green); background: #fff; }
+
+    .note { font-size: 11px; color: #999; margin-top: 10px; display: flex; align-items: center; gap: 6px; font-weight: 600; }
+    .note i { color: #f39c12; }
+
+    .footer { position: fixed; bottom: 0; width: 100%; padding: 15px; background: white; border-top: 1px solid #f0f0f0; box-sizing: border-box; }
+    .withdraw-btn { 
+        width: 100%; background: var(--green); color: white; border: none; 
+        padding: 18px; border-radius: 15px; font-size: 16px; font-weight: 800; cursor: pointer;
+        box-shadow: 0 4px 15px rgba(15, 169, 88, 0.2); transition: 0.3s;
+    }
+    .withdraw-btn:active { transform: scale(0.97); }
+    .withdraw-btn:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+
+    #loader { display: none; margin-top: 10px; text-align: center; }
+    .spinner { width: 20px; height: 20px; border: 3px solid #eee; border-top: 3px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+    <i class="fa-solid fa-arrow-left" onclick="location.href='wallet.html'"></i>
+    <b>Withdraw Money</b>
+</div>
+
+<div class="container">
+    <div class="card">
+        <div class="balance-box">
+            <span>Withdrawable Winnings</span>
+            <h2 id="walletBal">₹0</h2>
+        </div>
+
+        <div class="input-group">
+            <label>Amount to Withdraw</label>
+            <input type="number" id="withdrawAmt" placeholder="Minimum ₹50" min="50">
+            <div class="note"><i class="fa-solid fa-circle-info"></i> Min withdrawal: ₹50 | Max: No limit</div>
+        </div>
+
+        <div class="input-group">
+            <label>Your UPI ID</label>
+            <input type="text" id="upiId" placeholder="e.g. 9876543210@ybl">
+            <div class="note"><i class="fa-solid fa-triangle-exclamation"></i> Careful! Wrong UPI ID leads to payment failure.</div>
+        </div>
+
+        <div id="loader">
+            <div class="spinner"></div> <span style="font-size: 12px; color: #888; margin-left: 5px;">Processing Request...</span>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <button class="withdraw-btn" id="subBtn" onclick="requestWithdraw()">WITHDRAW NOW</button>
+</div>
+
+<script>
+const firebaseConfig = {
+ apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
+ authDomain: "kl-esports.firebaseapp.com",
+ databaseURL: "https://kl-esports-default-rtdb.firebaseio.com",
+ projectId: "kl-esports",
+ storageBucket: "kl-esports.appspot.com",
+ messagingSenderId: "440301376580",
+ appId: "1:440301376580:web:fb0b8ae0df3fe096bd1811"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+let currentWinnings = 0;
+
+auth.onAuthStateChanged(user => {
+    if(user) {
+        db.ref("users/" + user.uid + "/wallet").on('value', snapshot => {
+            const data = snapshot.val();
+            if(data !== null && typeof data === 'object') {
+                currentWinnings = parseInt(data.winnings || 0);
+            } else {
+                currentWinnings = 0;
+            }
+            document.getElementById("walletBal").innerText = "₹" + currentWinnings;
+        });
+    } else {
+        window.location.href = "index.html";
+    }
+});
+
+async function requestWithdraw() {
+    const amtInput = document.getElementById("withdrawAmt");
+    const upiInput = document.getElementById("upiId");
+    const amt = parseInt(amtInput.value);
+    const upi = upiInput.value.trim();
+    const btn = document.getElementById("subBtn");
+    const loader = document.getElementById("loader");
+
+    if(!amt || amt < 50) return alert("Minimum withdrawal is ₹50");
+    if(amt > currentWinnings) return alert("Insufficient Winnings!");
+    if(upi === "" || !upi.includes("@")) return alert("Please enter a valid UPI ID");
+
+    if(!confirm(`Withdraw ₹${amt} to ${upi}?`)) return;
+
+    btn.disabled = true;
+    btn.style.display = "none";
+    loader.style.display = "block";
+
+    const user = auth.currentUser;
+    
+    // 🔥 HISTORY-ilekkulla data (Transactions Node)
+    const historyData = {
+        uid: user.uid,
+        amount: amt,
+        type: "withdrawal",
+        status: "pending",
+        upiId: upi,
+        timestamp: firebase.database.ServerValue.TIMESTAMP // Ithanu date/time fetch cheyyan use cheyyunnath
+    };
+
+    // Admin-nu vendiyulla request
+    const requestData = {
+        uid: user.uid,
+        email: user.email,
+        amount: amt,
+        upiId: upi,
+        status: "pending",
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    };
+
+    try {
+        // 1. Balance minus cheyyunnu
+        await db.ref("users/" + user.uid + "/wallet/winnings").set(currentWinnings - amt);
+
+        // 2. Transaction history-ilekk push cheyyunnu (For Wallet Page)
+        await db.ref("transactions").push(historyData);
+
+        // 3. Admin-nu vendi withdrawRequests-ilekk push cheyyunnu
+        await db.ref("withdrawRequests").push(requestData);
+
+        alert("Request Sent! Money will be credited within 24 hours.");
+        window.location.href = "wallet.html";
+    } catch (e) {
+        alert("Transaction Failed: " + e.message);
+        btn.disabled = false;
+        btn.style.display = "block";
+        loader.style.display = "none";
+    }
+}
+</script>
+</body>
+</html>
