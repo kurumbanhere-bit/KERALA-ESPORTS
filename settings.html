@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Account Settings - KERALA ESPORTS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+:root { --p-green: #0fa958; --bg: #ffffff; --surface: #f4f7f5; }
+body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #333; }
+
+/* TOP BAR */
+.top-bar { display: flex; align-items: center; padding: 15px; font-weight: bold; font-size: 18px; border-bottom: 1px solid #f0f0f0; background: #fff; position: sticky; top: 0; z-index: 100; }
+.top-bar i { margin-right: 15px; cursor: pointer; font-size: 20px; color: var(--p-green); }
+
+/* PROFILE IMAGE SECTION */
+.profile-section { text-align: center; padding: 30px 0; background: #fff; }
+.img-container { position: relative; display: inline-block; }
+.profile-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; background: #eee; border: 3px solid var(--p-green); padding: 3px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.camera-icon { 
+    position: absolute; bottom: 5px; right: 5px; 
+    background: var(--p-green); border: 2px solid white; color: white; border-radius: 50%; padding: 8px; 
+    font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); cursor: pointer;
+}
+.display-name { font-size: 19px; font-weight: 800; margin-top: 12px; color: #222; }
+
+/* FORM STYLING */
+.form-container { padding: 25px; }
+.input-group { margin-bottom: 22px; }
+.input-group label { display: block; font-size: 12px; color: #888; margin-bottom: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.input-group input { 
+    width: 100%; padding: 14px; border: 1px solid #eee; border-radius: 12px; 
+    box-sizing: border-box; font-size: 15px; background: var(--surface); outline: none; transition: 0.3s;
+}
+.input-group input:focus { border-color: var(--p-green); background: #fff; box-shadow: 0 0 0 4px rgba(15, 169, 88, 0.05); }
+
+.save-btn { 
+    width: 100%; padding: 16px; background: var(--p-green); color: white; 
+    border: none; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; 
+    box-shadow: 0 4px 15px rgba(15, 169, 88, 0.2); transition: 0.3s;
+}
+.save-btn:active { transform: scale(0.98); }
+
+/* LOADER */
+.loader-container { display: none; text-align: center; margin-top: 15px; }
+.spinner {
+    width: 25px; height: 25px; border: 3px solid #f3f3f3; border-top: 3px solid var(--p-green);
+    border-radius: 50%; animation: spin 1s linear infinite; display: inline-block;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.btn-disabled { background: #ccc !important; cursor: not-allowed; box-shadow: none; }
+
+/* LOGOUT FOOTER */
+.logout-footer { 
+    position: fixed; bottom: 0; width: 100%; 
+    padding: 18px 0; border-top: 1px solid #f0f0f0; text-align: center;
+    color: #ff4d4d; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: #fff; font-size: 15px;
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+    <i class="fa-solid fa-arrow-left" onclick="history.back()"></i>
+    Account Settings
+</div>
+
+<div class="profile-section">
+    <div class="img-container">
+        <img id="profilePreview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-img">
+        <label for="imgUpload" class="camera-icon"><i class="fa-solid fa-camera"></i></label>
+        <input type="file" id="imgUpload" accept="image/*" style="display: none;" onchange="previewImage(event)">
+    </div>
+    <div id="uName" class="display-name">Loading...</div>
+</div>
+
+<div class="form-container">
+    <div class="input-group">
+        <label>Game Name (FF Name)</label>
+        <input type="text" id="gameName" placeholder="Enter your FF name">
+    </div>
+    <div class="input-group">
+        <label>Game UID</label>
+        <input type="number" id="gameID" placeholder="Enter your UID">
+    </div>
+    <button id="saveBtn" class="save-btn" onclick="saveData()">SAVE CHANGES</button>
+    
+    <div id="loader" class="loader-container">
+        <div class="spinner"></div>
+        <p style="font-size: 12px; color: #888; margin-top: 5px;">Updating profile...</p>
+    </div>
+</div>
+
+<div class="logout-footer" onclick="logoutUser()">
+    <i class="fa-solid fa-right-from-bracket"></i> LOGOUT FROM ACCOUNT
+</div>
+
+<script>
+/* 🔥 FIREBASE CONFIG */
+const firebaseConfig = {
+ apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
+ authDomain: "kl-esports.firebaseapp.com",
+ databaseURL: "https://kl-esports-default-rtdb.firebaseio.com",
+ projectId: "kl-esports",
+ storageBucket: "kl-esports.appspot.com",
+ messagingSenderId: "440301376580",
+ appId: "1:440301376580:web:fb0b8ae0df3fe096bd1811"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+let currentUserUID = "";
+
+auth.onAuthStateChanged(user => {
+    if(user) {
+        currentUserUID = user.uid;
+        db.ref("users/" + user.uid).on('value', snapshot => {
+            const myData = snapshot.val();
+            if(myData) {
+                document.getElementById("uName").innerText = myData.username || "Gamer";
+                document.getElementById("profilePreview").src = myData.profilePic || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                document.getElementById("gameName").value = myData.gameName || "";
+                document.getElementById("gameID").value = myData.gameID || "";
+            }
+        });
+    } else {
+        window.location.href = "index.html";
+    }
+});
+
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        if(file.size > 500000) { // 500KB limit for better speed
+            alert("Image too large! Please choose a smaller photo.");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function() {
+            document.getElementById('profilePreview').src = reader.result;
+        }
+        reader.readAsDataURL(file);
+    }
+}
+
+function saveData() {
+    const gn = document.getElementById("gameName").value.trim();
+    const gi = document.getElementById("gameID").value.trim();
+    const pic = document.getElementById("profilePreview").src;
+    const btn = document.getElementById("saveBtn");
+    const loader = document.getElementById("loader");
+
+    if(!gn || !gi) { alert("Please enter both Name and UID"); return; }
+
+    btn.style.display = "none";
+    loader.style.display = "block";
+
+    db.ref("users/" + currentUserUID).update({
+        gameName: gn,
+        gameID: gi,
+        profilePic: pic
+    }).then(() => {
+        btn.style.display = "block";
+        loader.style.display = "none";
+        alert("Profile Updated!");
+    }).catch((error) => {
+        btn.style.display = "block";
+        loader.style.display = "none";
+        alert("Error: " + error.message);
+    });
+}
+
+function logoutUser() {
+    if(confirm("Are you sure you want to logout?")) {
+        auth.signOut().then(() => { 
+            window.location.href = "index.html"; 
+        });
+    }
+}
+</script>
+
+</body>
+</html>
