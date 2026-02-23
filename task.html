@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Missions - KL ESPORTS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root { --p-green: #0fa958; --bg: #f5fff9; --white: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 30px; color: #333; }
+        
+        .header { background: var(--white); padding: 18px; font-weight: 800; font-size: 18px; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 15px; }
+        .header i { color: var(--p-green); cursor: pointer; }
+
+        .mission-container { padding: 15px; }
+        
+        .m-card { background: white; padding: 20px; border-radius: 18px; margin-bottom: 15px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .m-info { flex: 1; }
+        .m-cat { font-size: 10px; font-weight: 900; color: var(--p-green); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .m-title { font-weight: 800; font-size: 16px; color: #222; margin-bottom: 3px; }
+        .m-reward { font-size: 13px; color: #666; font-weight: 600; }
+        
+        .claim-btn { background: var(--p-green); color: white; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.2s; font-size: 13px; }
+        .claim-btn:disabled { background: #e0e0e0; color: #999; cursor: not-allowed; }
+
+        .loading-text { text-align: center; margin-top: 50px; color: #999; font-weight: 600; }
+        .progress-mini { font-size: 11px; color: #ff4d00; font-weight: bold; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <i class="fa-solid fa-arrow-left" onclick="history.back()"></i>
+    <span>Missions & Rewards</span>
+</div>
+
+<div class="mission-container" id="missionList">
+    <div class="loading-text">Analyzing Missions...</div>
+</div>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
+    authDomain: "kl-esports.firebaseapp.com",
+    databaseURL: "https://kl-esports-default-rtdb.firebaseio.com",
+    projectId: "kl-esports",
+    storageBucket: "kl-esports.appspot.com",
+    messagingSenderId: "440301376580",
+    appId: "1:440301376580:web:fb0b8ae0df3fe096bd1811"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+function initMissions() {
+    auth.onAuthStateChanged(user => {
+        if(!user) return;
+
+        db.ref('users/' + user.uid).on('value', userSnap => {
+            const userData = userSnap.val() || {};
+            
+            db.ref('missions').on('value', missionSnap => {
+                const listDiv = document.getElementById('missionList');
+                listDiv.innerHTML = "";
+
+                if(!missionSnap.exists()) {
+                    listDiv.innerHTML = "<div class='loading-text'>No active missions! Check later.</div>";
+                    return;
+                }
+
+                missionSnap.forEach(child => {
+                    const m = child.val();
+                    const isClaimed = userData.claimedMissions && userData.claimedMissions[m.id];
+                    
+                    let progressInfo = "";
+                    if(m.type === "matches" && !isClaimed) {
+                        const played = userData.totalMatches || 0;
+                        progressInfo = `<div class="progress-mini">Progress: ${played}/${m.reqValue} Matches</div>`;
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = "m-card";
+                    card.innerHTML = `
+                        <div class="m-info">
+                            <div class="m-cat">${m.category}</div>
+                            <div class="m-title">${m.description}</div>
+                            <div class="m-reward">Reward: <span style="color:var(--p-green)">₹${m.amount}</span></div>
+                            ${progressInfo}
+                        </div>
+                        <button id="btn-${m.id}" class="claim-btn" 
+                            onclick="verifyAndClaim('${m.id}', ${m.amount}, '${m.type}', ${m.reqValue})"
+                            ${isClaimed ? 'disabled' : ''}>
+                            ${isClaimed ? 'CLAIMED' : 'CLAIM'}
+                        </button>`;
+                    listDiv.appendChild(card);
+                });
+            });
+        });
+    });
+}
+
+function verifyAndClaim(mid, amount, type, reqValue) {
+    const user = auth.currentUser;
+    const btn = document.getElementById('btn-' + mid);
+    btn.disabled = true;
+    btn.innerText = "CHECKING...";
+
+    db.ref('users/' + user.uid).once('value', snap => {
+        const u = snap.val() || {};
+        let canClaim = false;
+        let errorMsg = "";
+
+        if (type === "signup") {
+            if (!u.bonusClaimed) canClaim = true;
+            else errorMsg = "Sign-up bonus already claimed!";
+        } 
+        else if (type === "matches") {
+            const played = u.totalMatches || 0;
+            if (played >= reqValue) canClaim = true;
+            else errorMsg = `Need ${reqValue} matches. (Current: ${played})`;
+        } 
+        else { canClaim = true; }
+
+        if (canClaim) {
+            executeReward(user.uid, mid, amount, type);
+        } else {
+            alert(errorMsg);
+            btn.disabled = false;
+            btn.innerText = "CLAIM";
+        }
+    });
+}
+
+// 🔥 FIXED EXECUTE REWARD: NaN Protection & History Sync
+function executeReward(uid, mid, amount, type) {
+    db.ref('users/' + uid).transaction(u => {
+        if (u) {
+            if (!u.claimedMissions) u.claimedMissions = {};
+            if (u.claimedMissions[mid]) return undefined; 
+
+            // Initialize Wallet Object if missing or NaN
+            if (!u.wallet || typeof u.wallet !== 'object') {
+                u.wallet = { deposit: 0, winnings: 0 };
+            }
+
+            // Convert to Number to fix NaN issues
+            let currentDep = Number(u.wallet.deposit) || 0;
+            let rewardAmt = Number(amount) || 0;
+
+            u.wallet.deposit = currentDep + rewardAmt;
+            u.claimedMissions[mid] = true;
+            
+            if(type === "signup") u.bonusClaimed = true;
+        }
+        return u;
+    }, (error, committed) => {
+        if (committed) {
+            // Push to Transaction History
+            const historyData = {
+                uid: uid,
+                amount: amount,
+                type: "Mission Reward",
+                status: "success",
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            db.ref("transactions").push(historyData);
+            
+            alert("Mission Accomplished! ₹" + amount + " added to wallet. 🎉");
+        } else {
+            alert("Claim failed. Already claimed or error occurred.");
+        }
+    });
+}
+
+initMissions();
+</script>
+</body>
+</html>
