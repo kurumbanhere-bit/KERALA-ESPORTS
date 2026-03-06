@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Matches - KL ESPORTS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+    :root { --p-green: #0fa958; --bg-light: #f8fbf9; --gold: #ffd700; --red: #ff4d4d; --white: #ffffff; }
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-light); padding-bottom: 80px; }
+    
+    /* Loading Speed Optimization UI */
+    #loader { position: fixed; inset: 0; background: #fff; display: flex; justify-content: center; align-items: center; z-index: 10000; transition: 0.5s; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--p-green); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Shimmer Effect for fast feel */
+    .shimmer { background: #f6f7f8; background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%); background-repeat: no-repeat; background-size: 800px 104px; display: inline-block; position: relative; animation: shimmer 1s linear infinite forwards; }
+    @keyframes shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
+
+    .top-bar { display: flex; align-items: center; padding: 15px 20px; background: white; font-weight: bold; border-bottom: 1px solid #eee; position: sticky; top:0; z-index:100; }
+    .top-bar i { margin-right: 15px; color: var(--p-green); font-size: 20px; cursor: pointer; }
+
+    .tab-navigator { display: flex; background: white; border-bottom: 1px solid #f0f0f0; position: sticky; top: 54px; z-index: 99; }
+    .tab { flex: 1; text-align: center; padding: 15px 0; font-size: 12px; font-weight: 800; color: #999; cursor: pointer; text-transform: uppercase; border-bottom: 3px solid transparent; }
+    .tab.active { color: var(--p-green); border-bottom: 3px solid var(--p-green); }
+
+    .matches-container { padding: 15px; }
+    
+    .match-card { background: var(--white); border-radius: 16px; margin-bottom: 20px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #f0f0f0; position: relative; }
+    .m-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .m-title { font-size: 15px; font-weight: 800; color: #222; text-transform: uppercase; }
+    .badge-row { display: flex; gap: 6px; margin-top: 6px; }
+    .badge { font-size: 9px; padding: 4px 10px; border-radius: 6px; font-weight: 900; }
+    .joined-badge { background: #e8f5e9; color: #0fa958; }
+    .type-badge { background: #f0f0f0; color: #666; }
+    .win-badge { background: var(--gold); color: #333; }
+
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 12px 0; }
+    .info-item { display: flex; flex-direction: column; }
+    .info-label { font-size: 10px; color: #999; font-weight: bold; }
+    .info-value { font-size: 14px; font-weight: 800; color: #333; }
+    .prize-val { color: var(--p-green); }
+
+    .match-thumb { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; border: 1px solid #f0f0f0; }
+
+    .m-footer-info { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 12px; border-top: 1px dotted #ddd; }
+    .time-txt { font-size: 11px; color: var(--red); font-weight: 800; }
+    .details-btn { background: var(--p-green); color: white; border: none; padding: 8px 18px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
+
+    .bar-bg { width: 100%; height: 6px; background: #f0f0f0; border-radius: 10px; margin-top: 10px; }
+    .bar-fill { height: 100%; background: var(--p-green); border-radius: 10px; }
+    .spots-txt { display: flex; justify-content: space-between; font-size: 10px; font-weight: 800; margin-top: 6px; color: #666; }
+
+    .no-match { text-align: center; padding-top: 100px; color: #ccc; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div id="loader"><div class="spinner"></div></div>
+
+<div class="top-bar">
+    <i class="fa-solid fa-arrow-left" onclick="location.href='dashboard.html'"></i>
+    <span>MY MATCHES</span>
+</div>
+
+<div class="tab-navigator">
+    <div class="tab active" onclick="switchTab(this, 'upcoming')">Upcoming</div>
+    <div class="tab" onclick="switchTab(this, 'ongoing')">Ongoing</div>
+    <div class="tab" onclick="switchTab(this, 'completed')">Completed</div>
+</div>
+
+<div id="matchContent" class="matches-container"></div>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
+    authDomain: "kl-esports.firebaseapp.com",
+    databaseURL: "https://kl-esports-default-rtdb.firebaseio.com",
+    projectId: "kl-esports",
+    storageBucket: "kl-esports.appspot.com",
+    messagingSenderId: "440301376580",
+    appId: "1:440301376580:web:fb0b8ae0df3fe096bd1811"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+let currentTab = 'upcoming';
+
+function formatMyDate(str) {
+    if(!str) return "";
+    const d = new Date(str);
+    return d.getDate() + " " + d.toLocaleString('en-us', { month: 'short' }) + " | " + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+}
+
+function switchTab(element, type) {
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    element.classList.add('active');
+    currentTab = type;
+    loadUserMatches();
+}
+
+async function loadUserMatches() {
+    const container = document.getElementById('matchContent');
+    const user = auth.currentUser;
+    if(!user) return;
+
+    // Fast loading fix: Hide loader quickly after first data fetch
+    container.innerHTML = '<div class="shimmer" style="width:100%; height:150px; border-radius:15px; margin-bottom:20px;"></div>';
+
+    try {
+        const userSnap = await db.ref('users/' + user.uid).once('value');
+        const myGameName = userSnap.val()?.gameName || "";
+
+        // Optimization: Use once() for faster initial load
+        const matchSnap = await db.ref('matches').once('value');
+        
+        container.innerHTML = "";
+        let found = false;
+        const now = new Date();
+
+        matchSnap.forEach(child => {
+            const data = child.val();
+            let isJoined = data.participants && (data.participants[user.uid] || Object.values(data.participants).some(p => p.uid === user.uid));
+
+            if(isJoined) {
+                let status = "upcoming";
+                const matchDate = new Date(data.time);
+                if (data.status === "Completed") status = "completed";
+                else if (matchDate <= now) status = "ongoing";
+
+                if(status === currentTab) {
+                    found = true;
+                    const joined = data.participants ? Object.keys(data.participants).length : 0;
+                    const max = parseInt(data.max) || 48;
+                    const per = (joined / max) * 100;
+                    
+                    let winLabel = "";
+                    if(status === 'completed' && data.winners) {
+                        if(Object.values(data.winners).some(w => w.playerName === myGameName)) {
+                            winLabel = `<span class="badge win-badge">🏆 YOU WON</span>`;
+                        }
+                    }
+
+                    container.innerHTML += `
+                        <div class="match-card" onclick="location.href='card.html?id=${child.key}'">
+                            <div class="m-header">
+                                <div>
+                                    <div class="m-title">${data.category}</div>
+                                    <div class="badge-row">
+                                        <span class="badge joined-badge">JOINED</span>
+                                        <span class="badge type-badge">${data.teamType}</span>
+                                        ${winLabel}
+                                    </div>
+                                </div>
+                                <img src="${data.thumbnail || 'img/default.jpg'}" class="match-thumb">
+                            </div>
+                            <div class="info-grid">
+                                <div class="info-item"><span class="info-label">Prize</span><span class="info-value prize-val">₹${data.prize}</span></div>
+                                <div class="info-item"><span class="info-label">Entry</span><span class="info-value">₹${data.entry || '0'}</span></div>
+                            </div>
+                            <div class="spots-wrap">
+                                <div class="bar-bg"><div class="bar-fill" style="width:${status === 'completed' ? '100' : per}%"></div></div>
+                                <div class="spots-txt"><span>${joined}/${max} PLAYERS</span><span>${status === 'upcoming' ? (max - joined) + ' LEFT' : status.toUpperCase()}</span></div>
+                            </div>
+                            <div class="m-footer-info">
+                                <span class="time-txt"><i class="fa-regular fa-clock"></i> ${formatMyDate(data.time)}</span>
+                                <button class="details-btn">DETAILS</button>
+                            </div>
+                        </div>`;
+                }
+            }
+        });
+
+        document.getElementById("loader").style.display = "none";
+        if(!found) container.innerHTML = `<div class="no-match">No ${currentTab} matches found</div>`;
+
+    } catch (e) {
+        console.error(e);
+        document.getElementById("loader").style.display = "none";
+    }
+}
+
+auth.onAuthStateChanged(user => { if(user) loadUserMatches(); else window.location.href = 'login.html'; });
+</script>
+</body>
+</html>
