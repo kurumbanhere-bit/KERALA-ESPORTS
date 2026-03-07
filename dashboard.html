@@ -67,12 +67,6 @@ body{ margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg-light);
 #rewardPopup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
 .reward-card { background: white; padding: 30px; border-radius: 25px; width: 80%; max-width: 320px; text-align: center; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .claim-btn { width: 100%; padding: 15px; background: var(--p-green); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 20px; cursor: pointer; }
-
-/* 🎮 GAME DETAILS POPUP */
-#detailsPopup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
-.details-card { background: white; padding: 25px; border-radius: 25px; width: 85%; max-width: 340px; text-align: center; }
-.details-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1.5px solid #eee; outline: none; box-sizing: border-box; font-size: 14px; }
-.details-input:focus { border-color: var(--p-green); }
 </style>
 </head>
 <body>
@@ -86,19 +80,6 @@ body{ margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg-light);
         <p style="color:#666; font-size:14px;">Claim your ₹10 bonus now!</p>
         <div style="font-size:35px; font-weight:900; color:var(--p-green); margin:15px 0;">₹10</div>
         <button class="claim-btn" id="claimBtn" onclick="claimReward()">CLAIM NOW</button>
-    </div>
-</div>
-
-<div id="detailsPopup">
-    <div class="details-card">
-        <h3 style="margin-top:0; color:#333; font-weight: 800;">PLAYER DETAILS</h3>
-        <p style="font-size: 12px; color: #777; margin-bottom: 20px;">Enter your Game details to proceed</p>
-        <input type="text" id="gName" class="details-input" placeholder="In-Game Name (IGN)">
-        <input type="number" id="gId" class="details-input" placeholder="In-Game UID">
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button onclick="document.getElementById('detailsPopup').style.display='none'" style="flex:1; padding:12px; border:none; border-radius:12px; background:#f0f0f0; color:#333; font-weight:bold;">CANCEL</button>
-            <button onclick="confirmJoin()" style="flex:1; padding:12px; border:none; border-radius:12px; background:var(--p-green); color:white; font-weight:bold;">NEXT</button>
-        </div>
     </div>
 </div>
 
@@ -145,13 +126,17 @@ const db = firebase.database();
 
 let currentCategory = "BR PER KILL";
 let allMatches = [];
-let pendingMatchId = null;
+let userGameDetails = { name: "", id: "" }; // Local cache for check
 
 auth.onAuthStateChanged(user => {
  if(user){
    db.ref("users/" + user.uid).on('value', snapshot => {
      const userData = snapshot.val();
      if(userData) {
+       // Cache game details for join check
+       userGameDetails.name = userData.gameName || "";
+       userGameDetails.id = userData.gameID || "";
+
        document.getElementById("usernameDisplay").innerText = userData.username || "Gamer";
        let total = 0;
        if(userData.wallet && typeof userData.wallet === 'object') {
@@ -182,6 +167,16 @@ auth.onAuthStateChanged(user => {
  } else { window.location.href = "login.html"; }
 });
 
+// ⚡ RE-ROUTING JOIN LOGIC
+function checkAndJoin(matchKey) {
+    if(!userGameDetails.name || !userGameDetails.id) {
+        alert("Action Required: Please set your Game Name and Game ID in Account Settings to join matches.");
+        window.location.href = "profile.html";
+    } else {
+        window.location.href = `card.html?id=${matchKey}`;
+    }
+}
+
 function renderMatches() {
     const container = document.getElementById('matchContainer');
     const user = auth.currentUser;
@@ -200,7 +195,7 @@ function renderMatches() {
             const slotColor = slotsLeft <= 5 ? '#ff4d4d' : '#0fa958';
 
             htmlContent += `
-                <div class="match-card" onclick="openDetails('${data.key}')">
+                <div class="match-card" onclick="checkAndJoin('${data.key}')">
                     <div class="card-top">
                         <span class="tag">${data.teamType}</span>
                         <span class="tag">${data.map || 'BERMUDA'}</span>
@@ -222,32 +217,12 @@ function renderMatches() {
                             ${slotsLeft <= 0 ? 'Fully Booked' : slotsLeft + ' Slots Remaining'}
                         </div>
                     </div>
-                    <button class="join-btn-dashboard" onclick="event.stopPropagation(); openDetails('${data.key}')">₹${data.entry} JOIN</button>
+                    <button class="join-btn-dashboard" onclick="event.stopPropagation(); checkAndJoin('${data.key}')">₹${data.entry} JOIN</button>
                 </div>
             `;
         }
     });
     container.innerHTML = htmlContent || "<div style='text-align:center; padding:50px; color:#ccc;'>No upcoming matches.</div>";
-}
-
-// ⚡ OPEN DETAILS POPUP
-function openDetails(matchKey) {
-    pendingMatchId = matchKey;
-    document.getElementById('detailsPopup').style.display = 'flex';
-}
-
-// ⚡ CONFIRM DETAILS & REDIRECT
-function confirmJoin() {
-    const name = document.getElementById('gName').value.trim();
-    const id = document.getElementById('gId').value.trim();
-    
-    if(!name || !id) {
-        alert("Please enter both Game Name and UID!");
-        return;
-    }
-    
-    // Pass details to card.html via URL
-    window.location.href = `card.html?id=${pendingMatchId}&gn=${encodeURIComponent(name)}&gi=${encodeURIComponent(id)}`;
 }
 
 function filterMatches(element, category) {
