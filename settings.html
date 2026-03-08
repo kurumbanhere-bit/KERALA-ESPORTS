@@ -56,9 +56,6 @@ body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); co
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-.btn-disabled { background: #ccc !important; cursor: not-allowed; box-shadow: none; }
-
-/* LOGOUT FOOTER */
 .logout-footer { 
     position: fixed; bottom: 0; width: 100%; 
     padding: 18px 0; border-top: 1px solid #f0f0f0; text-align: center;
@@ -80,7 +77,7 @@ body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); co
         <label for="imgUpload" class="camera-icon"><i class="fa-solid fa-camera"></i></label>
         <input type="file" id="imgUpload" accept="image/*" style="display: none;" onchange="previewImage(event)">
     </div>
-    <div id="uName" class="display-name">Loading...</div>
+    <div id="uName" class="display-name">Gamer</div>
 </div>
 
 <div class="form-container">
@@ -105,7 +102,22 @@ body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); co
 </div>
 
 <script>
-/* 🔥 FIREBASE CONFIG */
+/* ⚡ ULTRA SPEED CONFIG & CACHE */
+const cacheKey = "userProfileCache";
+const imgPreview = document.getElementById("profilePreview");
+const uDisplay = document.getElementById("uName");
+const gNameInput = document.getElementById("gameName");
+const gIDInput = document.getElementById("gameID");
+
+// 1. Instant Cache Load
+const cachedData = JSON.parse(localStorage.getItem(cacheKey));
+if(cachedData) {
+    uDisplay.innerText = cachedData.username || "Gamer";
+    imgPreview.src = cachedData.profilePic || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+    gNameInput.value = cachedData.gameName || "";
+    gIDInput.value = cachedData.gameID || "";
+}
+
 const firebaseConfig = {
  apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
  authDomain: "kl-esports.firebaseapp.com",
@@ -120,21 +132,21 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
-let currentUserUID = "";
-
 auth.onAuthStateChanged(user => {
     if(user) {
-        currentUserUID = user.uid;
-        db.ref("users/" + user.uid).on('value', snapshot => {
+        // 2. Fast Single Fetch (Once) to avoid constant listening lag
+        db.ref("users/" + user.uid).once('value').then(snapshot => {
             const myData = snapshot.val();
             if(myData) {
-                document.getElementById("uName").innerText = myData.username || "Gamer";
-                document.getElementById("profilePreview").src = myData.profilePic || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-                document.getElementById("gameName").value = myData.gameName || "";
-                document.getElementById("gameID").value = myData.gameID || "";
+                localStorage.setItem(cacheKey, JSON.stringify(myData));
+                uDisplay.innerText = myData.username || "Gamer";
+                imgPreview.src = myData.profilePic || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                gNameInput.value = myData.gameName || "";
+                gIDInput.value = myData.gameID || "";
             }
         });
     } else {
+        localStorage.removeItem(cacheKey);
         window.location.href = "index.html";
     }
 });
@@ -142,53 +154,53 @@ auth.onAuthStateChanged(user => {
 function previewImage(event) {
     const file = event.target.files[0];
     if (file) {
-        if(file.size > 500000) { // 500KB limit for better speed
-            alert("Image too large! Please choose a smaller photo.");
+        if(file.size > 200000) { // Limit 200KB for speed
+            alert("Image size valuthaanu! 200KB-il thazheulla photo choose cheyyu.");
             return;
         }
         const reader = new FileReader();
-        reader.onload = function() {
-            document.getElementById('profilePreview').src = reader.result;
-        }
+        reader.onload = () => { imgPreview.src = reader.result; }
         reader.readAsDataURL(file);
     }
 }
 
 function saveData() {
-    const gn = document.getElementById("gameName").value.trim();
-    const gi = document.getElementById("gameID").value.trim();
-    const pic = document.getElementById("profilePreview").src;
+    const gn = gNameInput.value.trim();
+    const gi = gIDInput.value.trim();
+    const pic = imgPreview.src;
     const btn = document.getElementById("saveBtn");
     const loader = document.getElementById("loader");
 
-    if(!gn || !gi) { alert("Please enter both Name and UID"); return; }
+    if(!gn || !gi) { alert("Details enter cheyyu!"); return; }
 
     btn.style.display = "none";
     loader.style.display = "block";
 
-    db.ref("users/" + currentUserUID).update({
-        gameName: gn,
-        gameID: gi,
-        profilePic: pic
-    }).then(() => {
+    const updatedData = { gameName: gn, gameID: gi, profilePic: pic };
+
+    db.ref("users/" + auth.currentUser.uid).update(updatedData).then(() => {
+        // Cache update immediately
+        const currentCache = JSON.parse(localStorage.getItem(cacheKey)) || {};
+        localStorage.setItem(cacheKey, JSON.stringify({...currentCache, ...updatedData}));
+        
         btn.style.display = "block";
         loader.style.display = "none";
-        alert("Profile Updated!");
-    }).catch((error) => {
+        alert("Success! Profile updated.");
+    }).catch(e => {
         btn.style.display = "block";
         loader.style.display = "none";
-        alert("Error: " + error.message);
+        alert("Error: " + e.message);
     });
 }
 
 function logoutUser() {
-    if(confirm("Are you sure you want to logout?")) {
+    if(confirm("Logout cheyyano?")) {
         auth.signOut().then(() => { 
+            localStorage.removeItem(cacheKey);
             window.location.href = "index.html"; 
         });
     }
 }
 </script>
-
 </body>
 </html>
