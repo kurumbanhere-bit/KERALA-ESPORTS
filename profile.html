@@ -28,16 +28,14 @@ body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); co
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* Header & Profile Section */
 .top-bar { display: flex; align-items: center; padding: 15px; font-weight: bold; font-size: 18px; border-bottom: 1px solid #f0f0f0; background: #fff; position: sticky; top: 0; z-index: 10; }
 .top-bar i { margin-right: 15px; cursor: pointer; font-size: 20px; color: var(--p-green); }
-.profile-main { text-align: center; padding: 30px 0; border-bottom: 8px solid #f9f9f9; animation: fadeIn 0.6s ease; }
+.profile-main { text-align: center; padding: 30px 0; border-bottom: 8px solid #f9f9f9; animation: fadeIn 0.4s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .profile-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--p-green); padding: 3px; background: #eee; }
 .username-text { font-size: 20px; font-weight: bold; margin-top: 10px; color: #222; }
 
-/* Menu List Styles */
 .menu-group-label { padding: 15px 20px 8px; font-size: 12px; font-weight: bold; color: #999; text-transform: uppercase; letter-spacing: 1px; }
 .menu-list { padding: 0 15px; }
 .menu-item { 
@@ -50,10 +48,9 @@ body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); co
 .menu-item span { font-weight: 500; font-size: 15px; color: #444; }
 .arrow-right { color: #ccc; font-size: 12px; }
 
-/* Logout Color */
 .logout-item span, .logout-item i { color: #ff4d4d !important; }
 
-/* MODAL (SLIDE-UP POPUP) */
+/* MODAL STYLES */
 .modal-overlay { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
     background: rgba(0,0,0,0.5); z-index: 100; display: none; align-items: flex-end; 
@@ -140,9 +137,14 @@ body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); co
 </div>
 
 <script>
-window.addEventListener("load", () => {
-    setTimeout(() => { document.getElementById("loader").style.display = "none"; }, 600);
-});
+// ⚡ ULTRA SPEED LOADING LOGIC (CACHE)
+const cache = localStorage.getItem("userProfile");
+if(cache) {
+    const data = JSON.parse(cache);
+    document.getElementById("uName").innerText = data.username || "Gamer";
+    document.getElementById("userImg").src = data.profilePic || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+    document.getElementById("loader").style.display = "none"; // Instant Hide
+}
 
 const firebaseConfig = {
  apiKey: "AIzaSyBrHcONT6y0he3fzrtRGqdQMZfIMpGxcNo",
@@ -160,14 +162,23 @@ const db = firebase.database();
 
 auth.onAuthStateChanged(user => {
     if(user) {
+        // background check and sync
         db.ref("users").child(user.uid).on('value', snapshot => {
             const myData = snapshot.val();
             if(myData) {
+                // Update Cache
+                localStorage.setItem("userProfile", JSON.stringify(myData));
+                
+                // Update UI if changed
                 document.getElementById("uName").innerText = myData.username || "Gamer";
                 document.getElementById("userImg").src = myData.profilePic || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                
+                // Hide loader anyway
+                document.getElementById("loader").style.display = "none";
             }
         });
     } else { 
+        localStorage.removeItem("userProfile");
         window.location.href = "index.html"; 
     }
 });
@@ -190,6 +201,7 @@ function closeModal() { document.getElementById("infoModal").style.display = "no
 function logoutUser() {
     if(confirm("Are you sure you want to logout?")) {
         auth.signOut().then(() => { 
+            localStorage.removeItem("userProfile");
             window.location.href = "index.html"; 
         }).catch(err => {
             alert("Logout Error: " + err.message);
