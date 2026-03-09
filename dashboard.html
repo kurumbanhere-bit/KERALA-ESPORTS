@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KL ESPORTS - Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="dashboard.css">
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <p>LOADING DASHBOARD...</p>
+    </div>
+
+    <div id="rewardPopup">
+        <div class="reward-card">
+            <div style="font-size:60px; animation: bounce 2s infinite;">🎁</div>
+            <h2 style="margin:10px 0; color:#222; font-weight:900;">WELCOME BONUS!</h2>
+            <p style="color:#666; font-size:14px;">Claim your ₹10 bonus now!</p>
+            <div style="font-size:35px; font-weight:900; color:var(--p-green); margin:15px 0;">₹10</div>
+            <button class="claim-btn" id="claimBtn" onclick="claimReward()">CLAIM NOW</button>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="header-left">
+            <img id="profilePic" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" onclick="location.href='profile.html'">
+            <span id="usernameDisplay">Loading Profile...</span>
+        </div>
+        <div class="wallet-box" id="walletAmount">₹0</div>
+    </div>
+
+    <div class="categories" id="categoryBar">
+        <div class="category active" onclick="filterMatches(this, 'BR PER KILL')">BR PER KILL</div>
+        <div class="category" onclick="filterMatches(this, 'BR SURVIVAL')">BR SURVIVAL</div>
+        <div class="category" onclick="filterMatches(this, 'CS HEADSHOT')">CS HEADSHOT</div>
+        <div class="category" onclick="filterMatches(this, 'CLASH SQUAD')">CLASH SQUAD</div>
+    </div>
+
+    <div id="matchContainer" class="matches-container">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="active"><i class="fa-solid fa-house"></i>Home</div>
+        <div onclick="location.href='my-matches.html'"><i class="fa-solid fa-gamepad"></i>My Matches</div>
+        <div onclick="location.href='task.html'"><i class="fa-solid fa-tasks"></i>Tasks</div>
+        <div onclick="location.href='wallet.html'"><i class="fa-solid fa-wallet"></i>Wallet</div>
+        <div onclick="location.href='profile.html'"><i class="fa-solid fa-user"></i>Profile</div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
