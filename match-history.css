@@ -1,0 +1,90 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #1a222d; /* Dark theme background */
+    color: white;
+}
+
+.header {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+    gap: 15px;
+}
+
+.table-header {
+    display: flex;
+    padding: 10px 15px;
+    font-size: 12px;
+    color: #888;
+    font-weight: bold;
+}
+
+.col-id { width: 10%; }
+.col-info { width: 60%; }
+.col-paid { width: 15%; text-align: center; }
+.col-won { width: 15%; text-align: center; }
+
+.match-container {
+    padding: 10px;
+}
+
+.match-card {
+    background: white;
+    color: #333;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.match-id {
+    width: 10%;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.match-details {
+    width: 60%;
+}
+
+.match-title {
+    font-weight: bold;
+    font-size: 13px;
+    display: block;
+}
+
+.match-date {
+    font-size: 11px;
+    color: #777;
+    margin-top: 4px;
+    display: block;
+}
+
+.coin-box {
+    width: 15%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    gap: 4px;
+}
+
+.coin-icon {
+    width: 18px;
+    height: 18px;
+    background: orange;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+.free-text { color: #0fa958; font-size: 12px; }
