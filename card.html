@@ -23,6 +23,11 @@
     .m-prize-main { font-size: 22px; font-weight: 900; color: var(--p-green); margin-top: 4px; }
     .m-date { font-size: 11px; font-weight: 800; color: var(--red); margin-top: 8px; text-transform: uppercase; display: inline-block; background: #fff5f5; padding: 4px 8px; border-radius: 5px; }
 
+    /* Rules Styling */
+    .rule-item { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+    .rule-num { background: var(--p-green); color: white; min-width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; margin-top: 2px; }
+    .rule-text { font-size: 12px; line-height: 1.5; font-weight: 600; color: #444; }
+
     /* Modal Styling */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
     .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
@@ -36,7 +41,7 @@
     .room-item-box { flex: 1; background: #f9f9f9; padding: 12px; border-radius: 10px; border: 1px solid #f0f0f0; text-align: center; }
     .room-label-small { font-size: 9px; color: #999; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; }
     .room-value-text { font-size: 14px; font-weight: 800; color: #222; font-family: monospace; }
-    .room-locked-text { font-size: 11px; font-weight: 800; color: var(--red); grid-column: span 2; text-align: center; padding: 5px; }
+    .room-locked-text { font-size: 11px; font-weight: 800; color: var(--red); text-align: center; padding: 5px; width: 100%; }
 
     .tabs { display: flex; background: #f0f0f0; margin: 15px; border-radius: 12px; padding: 4px; }
     .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 700; color: #777; cursor: pointer; border-radius: 10px; }
@@ -154,7 +159,7 @@ function loadPlayers() {
             if(teamInfo && teamInfo.members) {
                 html += `<div class="squad-members-list">`;
                 teamInfo.members.forEach((m, idx) => {
-                    if(idx === 0) return; // Skip Leader as shown above
+                    if(idx === 0) return; 
                     html += `<span class="member-chip"><i class="fa fa-user" style="font-size:8px;"></i> ${m}</span>`;
                 });
                 html += `</div>`;
@@ -169,7 +174,9 @@ function renderRules(cat) {
     const rulesDiv = document.getElementById('dynamicRules');
     const isCS = cat.toUpperCase().includes("CLASH") || cat.toUpperCase().includes("CS");
     if(isCS) {
-        rulesDiv.innerHTML = <div class="rule-item"><div class="rule-num">1</div><div class="rule-text">Tournment rule.</div></div>
+        rulesDiv.innerHTML = `
+            <div style="font-weight:900; color:var(--p-green); font-size:11px; margin-bottom:12px; text-transform:uppercase;">CS Tournament Rules</div>
+            <div class="rule-item"><div class="rule-num">1</div><div class="rule-text">Tournament rule.</div></div>
             <div class="rule-item"><div class="rule-num">2</div><div class="rule-text">Multiple accounts = Permanent Freeze.</div></div>
             <div class="rule-item"><div class="rule-num">3</div><div class="rule-text">Zone pack : Strictly NOT allowed.</div></div>
             <div class="rule-item"><div class="rule-num">4</div><div class="rule-text">Throwables (Grenades/Flash): Not allowed.</div></div>
@@ -177,14 +184,13 @@ function renderRules(cat) {
             <div class="rule-item"><div class="rule-num">6</div><div class="rule-text">Minimum level required: 40.</div></div>
             <div class="rule-item"><div class="rule-num">7</div><div class="rule-text">Character skills & Gun attributes: OFF.</div></div>
             <div class="rule-item"><div class="rule-num">8</div><div class="rule-text">POV Recording: Mandatory for every player.</div></div>
-            <div class="rule-item"><div class="rule-num">9</div><div class="rule-text"> Room ID and Password will be provided at the exact time. The match starts 10 minutes later. If the opponent is absent even after 10 minutes, you get the winnings and they get no refund.
-Example: For a 5:00 PM match, ID/Pass is given at 5:00, and start is at 5:10.</div></div>
-            <div class="rule-item"><div class="rule-num">10</div><div class="rule-text">If you face any problem, support or issues contact on customer support.</div></div>
+            <div class="rule-item"><div class="rule-num">9</div><div class="rule-text">Room ID and Password shared at exact time. Start after 10 mins. No refund for late join.</div></div>
+            <div class="rule-item"><div class="rule-num">10</div><div class="rule-text">Contact customer support for any issues.</div></div>
             <div class="rule-item"><div class="rule-num">11</div><div class="rule-text">Share your POV first to request opponent's.</div></div>
-            <div class="rule-item"><div class="rule-num">12</div><div class="rule-text">Once POV is requested, it must be provided within 24 hours. Otherwise, no winnings will be given.</div></div>
+            <div class="rule-item"><div class="rule-num">12</div><div class="rule-text">POV must be provided within 24 hours of request.</div></div>
             <div class="rule-item"><div class="rule-num">13</div><div class="rule-text">Missed room join: No refund.</div></div>
             <div class="rule-item"><div class="rule-num">14</div><div class="rule-text">Unregistered invites: Kicked immediately.</div></div>
-            <div class="rule-item"><div class="rule-num">15</div><div class="rule-text">Hacks/Glitch/Unfair use: Permanent ban.</div></div>
+            <div class="rule-item"><div class="rule-num">15</div><div class="rule-text">Hacks/Glitch: Permanent ban.</div></div>
             <div class="rule-item"><div class="rule-num">16</div><div class="rule-text">Result: Declared within 1 hour.</div></div>
         `;
     } else {
@@ -203,8 +209,10 @@ Example: For a 5:00 PM match, ID/Pass is given at 5:00, and start is at 5:10.</d
             <div class="rule-item"><div class="rule-num">11</div><div class="rule-text">Plain text names only. No stylish fonts.</div></div>
             <div class="rule-item"><div class="rule-num">12</div><div class="rule-text">Stay in joined slot. No switching.</div></div>
             <div class="rule-item"><div class="rule-num">13</div><div class="rule-text">ID & Pass shared 5 mins before start.</div></div>
-            <div class="rule-item"><div class="rule-num">14</div><div class="rule-text">If duo or squad match. only entire with squad entry. </div></div>
+            <div class="rule-item"><div class="rule-num">14</div><div class="rule-text">If duo or squad match, only enter with squad entry. </div></div>
         `;
+    }
+}
 
 if(matchId) {
     db.ref('matches/' + matchId).on('value', snap => {
@@ -217,7 +225,6 @@ if(matchId) {
         document.getElementById('mPrizeHeader').innerText = "₹" + (data.prize || 0);
         document.getElementById('mThumb').src = data.thumbnail || "";
         
-        // Date Fix Logic
         const rawTime = data.time || ""; 
         let finalDateDisplay = "PENDING";
         if (rawTime) {
