@@ -23,8 +23,15 @@
     .m-prize-main { font-size: 22px; font-weight: 900; color: var(--p-green); margin-top: 4px; }
     .m-date { font-size: 11px; font-weight: 800; color: var(--red); margin-top: 8px; text-transform: uppercase; display: inline-block; background: #fff5f5; padding: 4px 8px; border-radius: 5px; }
 
+    /* Modal Styling */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+    .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .modal-title { font-size: 16px; font-weight: 900; margin-bottom: 15px; color: var(--p-green); display: flex; align-items: center; gap: 8px; }
+    .input-box { margin-bottom: 12px; }
+    .input-box label { font-size: 10px; font-weight: 800; color: #888; display: block; margin-bottom: 4px; }
+    .input-box input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; font-size: 13px; font-weight: 700; background: #f9f9f9; box-sizing: border-box; outline: none; }
+
     .room-card-white { background: var(--white); margin: 0 15px 15px 15px; padding: 18px; border-radius: 15px; border: 2px solid var(--p-green); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-    .room-title-label { font-size: 11px; color: #555; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
     .room-grid { display: flex; justify-content: space-between; gap: 10px; }
     .room-item-box { flex: 1; background: #f9f9f9; padding: 12px; border-radius: 10px; border: 1px solid #f0f0f0; text-align: center; }
     .room-label-small { font-size: 9px; color: #999; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; }
@@ -35,18 +42,13 @@
     .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 700; color: #777; cursor: pointer; border-radius: 10px; }
     .tab.active { background: white; color: var(--p-green); }
 
-    /* Player Card Styles */
-    .player-card { background: white; margin: 0 15px 10px 15px; padding: 12px; border-radius: 12px; border: 1px solid #eee; }
-    .p-main-info { display: flex; align-items: center; gap: 12px; }
-    .player-img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; background: #f0f0f0; }
+    .player-row { background: white; margin: 0 15px 10px 15px; padding: 12px; border-radius: 12px; border: 1px solid #eee; }
+    .p-header { display: flex; align-items: center; gap: 12px; }
+    .player-img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: #f0f0f0; }
     .p-user-name { font-weight: 800; font-size: 14px; color: #222; }
-    .squad-tag { font-size: 9px; font-weight: 900; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #64748b; margin-left: auto; }
-    .squad-members-box { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #eee; display: flex; flex-wrap: wrap; gap: 6px; }
-    .member-chip { font-size: 11px; font-weight: 700; color: #555; background: #f8fafc; padding: 4px 10px; border-radius: 20px; border: 1px solid #e2e8f0; }
-
-    .rule-item { display: flex; gap: 12px; margin-bottom: 15px; align-items: flex-start; }
-    .rule-num { min-width: 24px; height: 24px; background: var(--p-green); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; }
-    .rule-text { font-size: 12.5px; color: #444; line-height: 1.5; }
+    .team-badge { font-size: 9px; font-weight: 900; background: #eee; padding: 2px 6px; border-radius: 4px; margin-left: auto; color: #666; }
+    .squad-members-list { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #eee; display: flex; flex-wrap: wrap; gap: 6px; }
+    .member-chip { font-size: 11px; font-weight: 700; background: #f9f9f9; padding: 3px 10px; border-radius: 15px; border: 1px solid #eee; color: #555; }
 
     .footer { position: fixed; bottom: 0; width: 100%; background: var(--white); padding: 15px 20px; box-sizing: border-box; border-top: 1px solid #eee; }
     .btn-join { background: var(--p-green); color: var(--white); width: 100%; border: none; padding: 16px; border-radius: 12px; font-weight: 800; cursor: pointer; }
@@ -54,9 +56,21 @@
 </head>
 <body>
 
+<div id="teamModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title"><i class="fa-solid fa-users"></i> <span id="mTypeTitle">TEAM</span> REGISTRATION</div>
+        <div style="background:#f0fdf4; padding:10px; border-radius:10px; margin-bottom:15px; border:1px dashed var(--p-green); font-size:12px; font-weight:bold;">
+            Total Deduction: ₹<span id="totalFeeText">0</span>
+        </div>
+        <div id="dynamicInputs"></div>
+        <button class="btn-join" onclick="confirmTeamJoin()">CONFIRM & JOIN</button>
+        <button onclick="closeModal()" style="width:100%; background:none; border:none; color:var(--red); font-weight:800; margin-top:12px; font-size:12px; cursor:pointer;">CANCEL</button>
+    </div>
+</div>
+
 <div class="header">
     <i class="fa-solid fa-arrow-left" onclick="history.back()"></i>
-    <span id="headerTitle">JOINED 0/48</span>
+    <span id="headerTitle">MATCH DETAILS</span>
 </div>
 
 <div class="match-preview">
@@ -83,9 +97,7 @@
     </div>
     <div id="prizeSection"><div id="prizeList" style="background:white; margin:0 15px; border-radius:12px; border:1px solid #eee;"></div></div>
     <div id="playerSection" style="display:none;"><div id="playerList"></div></div>
-    <div id="rulesSection" style="display:none; padding: 20px; background: white; margin: 0 15px; border-radius: 12px; border: 1px solid #eee;">
-        <div id="dynamicRules"></div>
-    </div>
+    <div id="rulesSection" style="display:none; padding: 20px; background: white; margin: 0 15px; border-radius: 12px; border: 1px solid #eee;"><div id="dynamicRules"></div></div>
     <div class="footer" id="joinFooter"><button class="btn-join" id="joinBtn" onclick="handleJoin()">JOIN NOW</button></div>
 </div>
 
@@ -105,11 +117,7 @@ const auth = firebase.auth();
 const matchId = new URLSearchParams(window.location.search).get('id');
 
 const defaultIcon = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-let currentUid = "";
-let userGameName = "";
-let currentBalance = 0;
-let entryFee = 0;
-let matchCategory = "";
+let currentUid = "", userGameName = "", currentBalance = 0, entryFee = 0, matchCategory = "", matchTeamType = "";
 
 auth.onAuthStateChanged(user => {
     if(user) {
@@ -118,10 +126,8 @@ auth.onAuthStateChanged(user => {
             const data = snap.val();
             if(data) {
                 userGameName = data.gameName || data.username || "Player";
-                let walletData = data.wallet;
-                if (walletData && typeof walletData === 'object') {
-                    currentBalance = parseInt(walletData.deposit || 0) + parseInt(walletData.winnings || 0);
-                } else { currentBalance = parseInt(walletData || 0); }
+                let w = data.wallet;
+                currentBalance = (w && typeof w === 'object') ? (parseInt(w.deposit || 0) + parseInt(w.winnings || 0)) : parseInt(w || 0);
             }
         });
     } else { window.location.href = "login.html"; }
@@ -134,16 +140,22 @@ function loadPlayers() {
         listDiv.innerHTML = "";
         if(!snapshot.exists()) { listDiv.innerHTML = "<div style='text-align:center; padding:40px;'>No players yet.</div>"; return; }
         snapshot.forEach(child => {
-            const part = child.val();
-            const playerName = part.playerName || part.gameName || "Unknown Player";
-            const isTeam = (part.teamType === "SQUAD" || part.teamType === "DUO");
+            const p = child.val();
+            const teamInfo = p.teamInfo || null;
             
-            let html = `<div class="player-card"><div class="p-main-info"><img src="${defaultIcon}" class="player-img"><div class="p-user-name">${playerName}</div><div class="squad-tag">${part.teamType || 'SOLO'}</div></div>`;
-            if(isTeam && part.teamInfo && part.teamInfo.members) {
-                html += `<div class="squad-members-box">`;
-                part.teamInfo.members.forEach((member, index) => {
-                    if(index === 0) return;
-                    html += `<span class="member-chip">${member}</span>`;
+            let html = `
+                <div class="player-row">
+                    <div class="p-header">
+                        <img src="${defaultIcon}" class="player-img">
+                        <div class="p-user-name">${p.playerName}</div>
+                        <div class="team-badge">${p.teamType || 'SOLO'}</div>
+                    </div>`;
+            
+            if(teamInfo && teamInfo.members) {
+                html += `<div class="squad-members-list">`;
+                teamInfo.members.forEach((m, idx) => {
+                    if(idx === 0) return; // Skip Leader as shown above
+                    html += `<span class="member-chip"><i class="fa fa-user" style="font-size:8px;"></i> ${m}</span>`;
                 });
                 html += `</div>`;
             }
@@ -156,10 +168,8 @@ function loadPlayers() {
 function renderRules(cat) {
     const rulesDiv = document.getElementById('dynamicRules');
     const isCS = cat.toUpperCase().includes("CLASH") || cat.toUpperCase().includes("CS");
-    
     if(isCS) {
-        rulesDiv.innerHTML = `
-            <div class="rule-item"><div class="rule-num">1</div><div class="rule-text">Tournment rule.</div></div>
+        <div class="rule-item"><div class="rule-num">1</div><div class="rule-text">Tournment rule.</div></div>
             <div class="rule-item"><div class="rule-num">2</div><div class="rule-text">Multiple accounts = Permanent Freeze.</div></div>
             <div class="rule-item"><div class="rule-num">3</div><div class="rule-text">Zone pack : Strictly NOT allowed.</div></div>
             <div class="rule-item"><div class="rule-num">4</div><div class="rule-text">Throwables (Grenades/Flash): Not allowed.</div></div>
@@ -195,42 +205,118 @@ Example: For a 5:00 PM match, ID/Pass is given at 5:00, and start is at 5:10.</d
             <div class="rule-item"><div class="rule-num">13</div><div class="rule-text">ID & Pass shared 5 mins before start.</div></div>
             <div class="rule-item"><div class="rule-num">14</div><div class="rule-text">If duo or squad match. only entire with squad entry. </div></div>
         `;
-    }
-}
-
 if(matchId) {
     db.ref('matches/' + matchId).on('value', snap => {
         const data = snap.val(); if(!data) return;
         matchCategory = data.category || "Tournament";
-        document.getElementById('mTitle').innerText = matchCategory;
+        matchTeamType = data.teamType || "SOLO";
+        entryFee = parseInt(data.entry || 0);
+        
+        document.getElementById('mTitle').innerText = `${matchCategory} (${matchTeamType})`;
         document.getElementById('mPrizeHeader').innerText = "₹" + (data.prize || 0);
         document.getElementById('mThumb').src = data.thumbnail || "";
         
+        // Date Fix Logic
+        const rawTime = data.time || ""; 
+        let finalDateDisplay = "PENDING";
+        if (rawTime) {
+            let d = rawTime.includes('T') ? new Date(rawTime) : new Date(data.date + " " + rawTime);
+            if (!isNaN(d.getTime())) {
+                const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+                let h = d.getHours(), m = d.getMinutes(), ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12 || 12;
+                finalDateDisplay = `${d.getDate()} ${months[d.getMonth()]} ${h}:${m < 10 ? '0'+m : m} ${ampm}`;
+            }
+        }
+        document.getElementById('mDate').innerText = finalDateDisplay;
+
         const participants = data.participants || {};
         const isJoined = participants[currentUid] ? true : false;
-        
-        const roomContent = document.getElementById('roomDetailsContent');
-        roomContent.innerHTML = isJoined ? 
-            `<div class="room-item-box"><div class="room-label-small">Room ID</div><div class="room-value-text">${data.roomId || "Pending"}</div></div><div class="room-item-box" style="margin-left:10px;"><div class="room-label-small">Password</div><div class="room-value-text">${data.roomPass || "Pending"}</div></div>` : 
-            `<div class="room-locked-text"><i class="fa-solid fa-lock"></i> JOIN TO UNLOCK ROOM</div>`;
-
-        entryFee = parseInt(data.entry || 0);
         const joinedCount = Object.keys(participants).length;
         const maxSlots = parseInt(data.max || 48);
         document.getElementById('headerTitle').innerText = `JOINED ${joinedCount}/${maxSlots}`;
 
+        const roomContent = document.getElementById('roomDetailsContent');
+        if(isJoined) {
+            roomContent.innerHTML = `<div class="room-item-box"><div class="room-label-small">Room ID</div><div class="room-value-text">${data.roomId || "Pending"}</div></div><div class="room-item-box" style="margin-left:10px;"><div class="room-label-small">Password</div><div class="room-value-text">${data.roomPass || "Pending"}</div></div>`;
+        } else {
+            roomContent.innerHTML = `<div class="room-locked-text"><i class="fa-solid fa-lock"></i> JOIN TO UNLOCK ROOM</div>`;
+        }
+
         const jBtn = document.getElementById('joinBtn');
         if(isJoined) { jBtn.innerText = "JOINED"; jBtn.disabled = true; jBtn.style.background = "#888"; }
+        else if(joinedCount >= maxSlots) { jBtn.innerText = "MATCH FULL"; jBtn.disabled = true; }
         else { jBtn.innerText = "JOIN NOW - ₹" + entryFee; jBtn.disabled = false; }
+
+        let pl = "";
+        if(data.prizeDist) {
+            data.prizeDist.split(',').forEach(i => {
+                let p = i.split(':');
+                if(p[0] && p[1]) pl += `<div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #f8f8f8; font-weight:bold; font-size:14px;"><span>${p[0]}</span><span style="color:var(--p-green)">${p[1]}</span></div>`;
+            });
+        }
+        document.getElementById('prizeList').innerHTML = pl || "<div style='padding:15px; text-align:center; color:#999;'>Standard Prize Pool</div>";
     });
 }
 
 function handleJoin() {
     if(currentBalance < entryFee) { alert("Insufficient Balance!"); return; }
-    if(!confirm("Join for ₹" + entryFee + "?")) return;
-    db.ref(`matches/${matchId}/participants/${currentUid}`).set({ uid: currentUid, playerName: userGameName, joinedAt: Date.now() }).then(() => {
-        db.ref(`matches/${matchId}/joined`).transaction(c => (c || 0) + 1);
-        alert("Successfully Joined! 🔥");
+    
+    if(matchTeamType === "SQUAD" || matchTeamType === "DUO") {
+        const count = matchTeamType === "SQUAD" ? 4 : 2;
+        document.getElementById('mTypeTitle').innerText = matchTeamType;
+        document.getElementById('totalFeeText').innerText = entryFee * count;
+        let html = `<div class="input-box"><label>PLAYER 1 (LEADER)</label><input type="text" value="${userGameName}" readonly style="background:#eee;"></div>`;
+        for(let i=2; i<=count; i++) {
+            html += `<div class="input-box"><label>PLAYER ${i} NAME & ID</label><input type="text" id="p${i}Input" placeholder="Name - ID"></div>`;
+        }
+        document.getElementById('dynamicInputs').innerHTML = html;
+        document.getElementById('teamModal').style.display = 'flex';
+    } else {
+        if(confirm("Join Solo for ₹" + entryFee + "?")) executeJoin(entryFee, null);
+    }
+}
+
+function closeModal() { document.getElementById('teamModal').style.display = 'none'; }
+
+function confirmTeamJoin() {
+    const count = matchTeamType === "SQUAD" ? 4 : 2;
+    let members = [userGameName];
+    for(let i=2; i<=count; i++) {
+        let val = document.getElementById(`p${i}Input`).value.trim();
+        if(!val) return alert(`Enter Player ${i} details!`);
+        members.push(val);
+    }
+    const teamFee = entryFee * count;
+    if(currentBalance < teamFee) return alert("Insufficient balance for team!");
+    executeJoin(teamFee, { members: members, teamId: "T-" + Date.now().toString().slice(-4) });
+}
+
+function executeJoin(fee, teamInfo) {
+    const userRef = db.ref('users/' + currentUid + '/wallet');
+    userRef.transaction(w => {
+        let dep = 0, win = 0;
+        if (w && typeof w === 'object') { dep = parseInt(w.deposit || 0); win = parseInt(w.winnings || 0); }
+        else { dep = parseInt(w || 0); }
+        if((dep + win) < fee) return;
+        let rem = fee;
+        if (dep >= rem) dep -= rem; else { rem -= dep; dep = 0; win -= rem; }
+        return { deposit: dep, winnings: win };
+    }, (err, committed) => {
+        if(committed) {
+            const partData = { uid: currentUid, playerName: userGameName, teamType: matchTeamType, teamInfo: teamInfo, joinedAt: Date.now() };
+            const histData = { matchId: matchId, title: matchCategory, fee: fee, type: matchTeamType, team: teamInfo, date: document.getElementById('mDate').innerText };
+            
+            const updates = {};
+            updates[`matches/${matchId}/participants/${currentUid}`] = partData;
+            updates[`user_history/${currentUid}/${matchId}`] = histData;
+            
+            db.ref().update(updates).then(() => {
+                db.ref(`matches/${matchId}/joined`).transaction(c => (c || 0) + 1);
+                alert("Joined Successfully! 🔥");
+                location.reload();
+            });
+        }
     });
 }
 
