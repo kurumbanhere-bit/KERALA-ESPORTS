@@ -35,9 +35,14 @@
     .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 700; color: #777; cursor: pointer; border-radius: 10px; }
     .tab.active { background: white; color: var(--p-green); }
 
-    .player-row { display: flex; align-items: center; gap: 15px; background: white; margin: 0 15px 10px 15px; padding: 12px; border-radius: 12px; border: 1px solid #eee; }
-    .player-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; background: #f0f0f0; }
-    .p-user-name { font-weight: 800; font-size: 15px; color: #222; }
+    /* Player Card Styles */
+    .player-card { background: white; margin: 0 15px 10px 15px; padding: 12px; border-radius: 12px; border: 1px solid #eee; }
+    .p-main-info { display: flex; align-items: center; gap: 12px; }
+    .player-img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; background: #f0f0f0; }
+    .p-user-name { font-weight: 800; font-size: 14px; color: #222; }
+    .squad-tag { font-size: 9px; font-weight: 900; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #64748b; margin-left: auto; }
+    .squad-members-box { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #eee; display: flex; flex-wrap: wrap; gap: 6px; }
+    .member-chip { font-size: 11px; font-weight: 700; color: #555; background: #f8fafc; padding: 4px 10px; border-radius: 20px; border: 1px solid #e2e8f0; }
 
     .rule-item { display: flex; gap: 12px; margin-bottom: 15px; align-items: flex-start; }
     .rule-num { min-width: 24px; height: 24px; background: var(--p-green); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; }
@@ -45,9 +50,6 @@
 
     .footer { position: fixed; bottom: 0; width: 100%; background: var(--white); padding: 15px 20px; box-sizing: border-box; border-top: 1px solid #eee; }
     .btn-join { background: var(--p-green); color: var(--white); width: 100%; border: none; padding: 16px; border-radius: 12px; font-weight: 800; cursor: pointer; }
-
-    .winner-label-card { background: white; padding: 15px; border-radius: 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-    .rank-box { width: 35px; height: 35px; background: #f0fdf4; color: var(--p-green); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; border: 1px solid #dcfce7; }
 </style>
 </head>
 <body>
@@ -71,13 +73,6 @@
 <div class="room-card-white" id="roomInfoBox">
     <div class="room-title-label"><i class="fa-solid fa-door-open" style="color:var(--p-green)"></i> Room Details</div>
     <div class="room-grid" id="roomDetailsContent"></div>
-</div>
-
-<div id="completedMatchUI" style="display:none;">
-    <div style="margin: 15px; font-size: 14px; font-weight: 800; color: #444; text-transform: uppercase; display: flex; align-items: center; gap: 8px;">
-        <i class="fa-solid fa-trophy" style="color:var(--gold);"></i> Tournament Winners
-    </div>
-    <div id="winnersListContainer" style="margin: 0 15px;"></div>
 </div>
 
 <div id="activeMatchUI">
@@ -141,7 +136,19 @@ function loadPlayers() {
         snapshot.forEach(child => {
             const part = child.val();
             const playerName = part.playerName || part.gameName || "Unknown Player";
-            listDiv.innerHTML += `<div class="player-row"><img src="${defaultIcon}" class="player-img"><div class="p-user-name">${playerName}</div></div>`;
+            const isTeam = (part.teamType === "SQUAD" || part.teamType === "DUO");
+            
+            let html = `<div class="player-card"><div class="p-main-info"><img src="${defaultIcon}" class="player-img"><div class="p-user-name">${playerName}</div><div class="squad-tag">${part.teamType || 'SOLO'}</div></div>`;
+            if(isTeam && part.teamInfo && part.teamInfo.members) {
+                html += `<div class="squad-members-box">`;
+                part.teamInfo.members.forEach((member, index) => {
+                    if(index === 0) return;
+                    html += `<span class="member-chip">${member}</span>`;
+                });
+                html += `</div>`;
+            }
+            html += `</div>`;
+            listDiv.innerHTML += html;
         });
     });
 }
@@ -152,7 +159,6 @@ function renderRules(cat) {
     
     if(isCS) {
         rulesDiv.innerHTML = `
-            <div style="font-weight:900; color:var(--p-green); font-size:11px; margin-bottom:12px; text-transform:uppercase;">CS (Round 7 - Unlimited)</div>
             <div class="rule-item"><div class="rule-num">1</div><div class="rule-text">Tournment rule.</div></div>
             <div class="rule-item"><div class="rule-num">2</div><div class="rule-text">Multiple accounts = Permanent Freeze.</div></div>
             <div class="rule-item"><div class="rule-num">3</div><div class="rule-text">Zone pack : Strictly NOT allowed.</div></div>
@@ -189,7 +195,6 @@ Example: For a 5:00 PM match, ID/Pass is given at 5:00, and start is at 5:10.</d
             <div class="rule-item"><div class="rule-num">13</div><div class="rule-text">ID & Pass shared 5 mins before start.</div></div>
             <div class="rule-item"><div class="rule-num">14</div><div class="rule-text">If duo or squad match. only entire with squad entry. </div></div>
         `;
-        `;
     }
 }
 
@@ -201,59 +206,13 @@ if(matchId) {
         document.getElementById('mPrizeHeader').innerText = "₹" + (data.prize || 0);
         document.getElementById('mThumb').src = data.thumbnail || "";
         
-        // 🔥 ISO & STRING DATE FIX: 4 MAR 2:30 PM
-        const rawTime = data.time || ""; 
-        let finalDateDisplay = "PENDING";
-
-        if (rawTime) {
-            let d;
-            // Check if it's ISO or simple date string
-            if(rawTime.includes('T')) { d = new Date(rawTime); }
-            else { d = new Date(data.date + " " + rawTime); }
-
-            if (!isNaN(d.getTime())) {
-                const day = d.getDate();
-                const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-                const month = months[d.getMonth()];
-                
-                let hours = d.getHours();
-                let minutes = d.getMinutes();
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                hours = hours % 12;
-                hours = hours ? hours : 12; 
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                
-                finalDateDisplay = `${day} ${month} ${hours}:${minutes} ${ampm}`;
-            }
-        }
-        document.getElementById('mDate').innerText = finalDateDisplay;
-
         const participants = data.participants || {};
         const isJoined = participants[currentUid] ? true : false;
-
-        if(data.status === "Completed") {
-            document.getElementById('headerTitle').innerText = "MATCH RESULTS";
-            document.getElementById('roomInfoBox').style.display = "none";
-            document.getElementById('activeMatchUI').style.display = "none";
-            document.getElementById('completedMatchUI').style.display = "block";
-            
-            const winCont = document.getElementById('winnersListContainer');
-            winCont.innerHTML = "";
-            if(data.winners) {
-                const sorted = Object.values(data.winners).sort((a, b) => parseInt(a.rank || 99) - parseInt(b.rank || 99));
-                sorted.forEach(w => {
-                    winCont.innerHTML += `<div class="winner-label-card"><div class="rank-box">${w.rank || '-'}</div><div style="flex: 1; margin-left: 15px;"><div style="font-weight: 800; font-size: 15px; color:#222;">${w.playerName || 'Player'}</div><div style="font-size: 10px; color: #888; font-weight: bold;"><i class="fa-solid fa-skull"></i> ${w.kills || 0} KILLS</div></div><div style="text-align: right;"><div style="color: var(--p-green); font-weight: 900; font-size: 16px;">₹${w.winnings || 0}</div><div style="font-size: 9px; color: #aaa; font-weight: bold;">WON</div></div></div>`;
-                });
-            } else { winCont.innerHTML = "<div style='text-align:center; padding:20px; color:#999;'>Results Pending...</div>"; }
-            return;
-        }
-
+        
         const roomContent = document.getElementById('roomDetailsContent');
-        if(isJoined) {
-            roomContent.innerHTML = `<div class="room-item-box"><div class="room-label-small">Room ID</div><div class="room-value-text">${data.roomId || "Pending"}</div></div><div class="room-item-box" style="margin-left:10px;"><div class="room-label-small">Password</div><div class="room-value-text">${data.roomPass || "Pending"}</div></div>`;
-        } else {
-            roomContent.innerHTML = `<div class="room-locked-text"><i class="fa-solid fa-lock"></i> JOIN TO UNLOCK ROOM</div>`;
-        }
+        roomContent.innerHTML = isJoined ? 
+            `<div class="room-item-box"><div class="room-label-small">Room ID</div><div class="room-value-text">${data.roomId || "Pending"}</div></div><div class="room-item-box" style="margin-left:10px;"><div class="room-label-small">Password</div><div class="room-value-text">${data.roomPass || "Pending"}</div></div>` : 
+            `<div class="room-locked-text"><i class="fa-solid fa-lock"></i> JOIN TO UNLOCK ROOM</div>`;
 
         entryFee = parseInt(data.entry || 0);
         const joinedCount = Object.keys(participants).length;
@@ -262,38 +221,16 @@ if(matchId) {
 
         const jBtn = document.getElementById('joinBtn');
         if(isJoined) { jBtn.innerText = "JOINED"; jBtn.disabled = true; jBtn.style.background = "#888"; }
-        else if(joinedCount >= maxSlots) { jBtn.innerText = "MATCH FULL"; jBtn.disabled = true; }
         else { jBtn.innerText = "JOIN NOW - ₹" + entryFee; jBtn.disabled = false; }
-
-        let pl = "";
-        if(data.prizeDist) {
-            data.prizeDist.split(',').forEach(i => {
-                let p = i.split(':');
-                if(p[0] && p[1]) pl += `<div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #f8f8f8; font-weight:bold; font-size:14px;"><span>${p[0]}</span><span style="color:var(--p-green)">${p[1]}</span></div>`;
-            });
-        }
-        document.getElementById('prizeList').innerHTML = pl || "<div style='padding:15px; text-align:center; color:#999;'>Standard Prize Pool</div>";
     });
 }
 
 function handleJoin() {
     if(currentBalance < entryFee) { alert("Insufficient Balance!"); return; }
     if(!confirm("Join for ₹" + entryFee + "?")) return;
-    const userRef = db.ref('users/' + currentUid + '/wallet');
-    userRef.transaction(currentVal => {
-        let dep = 0, win = 0;
-        if (currentVal && typeof currentVal === 'object') { dep = parseInt(currentVal.deposit || 0); win = parseInt(currentVal.winnings || 0); }
-        else { dep = parseInt(currentVal || 0); }
-        if((dep + win) < entryFee) return;
-        if (dep >= entryFee) { dep -= entryFee; } else { let rem = entryFee - dep; dep = 0; win -= rem; }
-        return { deposit: dep, winnings: win };
-    }, (error, committed) => {
-        if(committed) {
-            db.ref(`matches/${matchId}/participants/${currentUid}`).set({ uid: currentUid, playerName: userGameName, joinedAt: Date.now() }).then(() => {
-                db.ref(`matches/${matchId}/joined`).transaction(c => (c || 0) + 1);
-                alert("Successfully Joined! 🔥");
-            });
-        }
+    db.ref(`matches/${matchId}/participants/${currentUid}`).set({ uid: currentUid, playerName: userGameName, joinedAt: Date.now() }).then(() => {
+        db.ref(`matches/${matchId}/joined`).transaction(c => (c || 0) + 1);
+        alert("Successfully Joined! 🔥");
     });
 }
 
