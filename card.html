@@ -11,7 +11,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <style>
-    :root { --p-green: #0fa958; --bg-light: #f5fff9; --white: #ffffff; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --text-dark: #1a1a1a; --red: #ff4d4d; }
+    :root { --p-green: #0fa958; --bg-light: #f5fff9; --white: #ffffff; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --red: #ff4d4d; }
     body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-light); color: #333; padding-bottom: 90px; }
     
     .header { background: var(--white); padding: 15px; display: flex; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 5px rgba(0,0,0,0.05); }
@@ -28,21 +28,18 @@
     .rule-num { background: var(--p-green); color: white; min-width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; margin-top: 2px; }
     .rule-text { font-size: 12px; line-height: 1.5; font-weight: 600; color: #444; }
 
-    /* Room Styling */
-    .room-card-white { background: var(--white); margin: 0 15px 15px 15px; padding: 18px; border-radius: 15px; border: 2px solid var(--p-green); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-    .room-grid { display: flex; justify-content: space-between; gap: 10px; }
-    .room-item-box { flex: 1; background: #f9f9f9; padding: 12px; border-radius: 10px; border: 1px solid #f0f0f0; text-align: center; }
-    .room-label-small { font-size: 9px; color: #999; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; }
-    .room-value-text { font-size: 14px; font-weight: 800; color: #222; font-family: monospace; }
-    .room-locked-text { font-size: 11px; font-weight: 800; color: var(--red); text-align: center; padding: 5px; width: 100%; }
+    /* Winner UI */
+    .winner-card { background: white; margin: 15px; border-radius: 15px; border: 2px solid var(--gold); padding: 20px; text-align: center; }
+    .winner-rank-row { display: flex; align-items: center; background: #f9f9f9; padding: 12px; border-radius: 10px; margin-bottom: 10px; }
 
-    /* Tabs Styling */
+    .room-card-white { background: var(--white); margin: 0 15px 15px 15px; padding: 18px; border-radius: 15px; border: 2px solid var(--p-green); }
+    .room-grid { display: flex; justify-content: space-between; gap: 10px; }
+    .room-item-box { flex: 1; background: #f9f9f9; padding: 12px; border-radius: 10px; text-align: center; }
+    .room-value-text { font-size: 14px; font-weight: 800; font-family: monospace; }
+
     .tabs { display: flex; background: #f0f0f0; margin: 15px; border-radius: 12px; padding: 4px; }
     .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 700; color: #777; cursor: pointer; border-radius: 10px; }
     .tab.active { background: white; color: var(--p-green); }
-
-    /* Winner UI */
-    .winner-card { background: white; margin: 15px; border-radius: 15px; border: 2px solid var(--gold); padding: 20px; text-align: center; }
 
     .footer { position: fixed; bottom: 0; width: 100%; background: var(--white); padding: 15px 20px; box-sizing: border-box; border-top: 1px solid #eee; }
     .btn-join { background: var(--p-green); color: var(--white); width: 100%; border: none; padding: 16px; border-radius: 12px; font-weight: 800; cursor: pointer; }
@@ -77,7 +74,7 @@
 
 <div id="regularUI">
     <div class="room-card-white" id="roomInfoBox">
-        <div class="room-title-label" style="font-size:12px; font-weight:bold; margin-bottom:10px;"><i class="fa-solid fa-door-open" style="color:var(--p-green)"></i> Room Details</div>
+        <div style="font-size:12px; font-weight:bold; margin-bottom:10px;"><i class="fa-solid fa-door-open" style="color:var(--p-green)"></i> Room Details</div>
         <div class="room-grid" id="roomDetailsContent"></div>
     </div>
 
@@ -115,10 +112,10 @@ if(matchId) {
     db.ref('matches/' + matchId).on('value', snap => {
         const data = snap.val(); if(!data) return;
         
-        console.log("Match Status:", data.status); // Ithu console-il check cheyyan vendiyan
+        // Ithu case-insensitive aakkittundu (Completed or completed)
+        const status = (data.status || "").toLowerCase();
 
-        // --- STRICT COMPLETED CHECK ---
-        if(data.status === "completed") {
+        if(status === "completed") {
             document.getElementById('winnerSection').style.display = "block";
             document.getElementById('regularUI').style.display = "none";
             document.getElementById('joinFooter').style.display = "none";
@@ -133,28 +130,25 @@ if(matchId) {
         document.getElementById('mPrizeHeader').innerText = "₹" + (data.prize || 0);
         document.getElementById('mThumb').src = data.thumbnail || "";
         
-        // Rules Rendering
         renderRules(data.category || "");
 
-        // ID/PASS Logic
-        const participants = data.participants || {};
-        const isJoined = participants[auth.currentUser.uid] ? true : false;
+        const isJoined = (data.participants && auth.currentUser && data.participants[auth.currentUser.uid]);
         const roomContent = document.getElementById('roomDetailsContent');
         if(isJoined) {
-            roomContent.innerHTML = `<div class="room-item-box"><div class="room-label-small">ID</div><div class="room-value-text">${data.roomId || "Pending"}</div></div><div class="room-item-box" style="margin-left:10px;"><div class="room-label-small">Pass</div><div class="room-value-text">${data.roomPass || "Pending"}</div></div>`;
+            roomContent.innerHTML = `<div class="room-item-box"><div style="font-size:9px; color:#999;">ID</div><div class="room-value-text">${data.roomId || "Pending"}</div></div><div class="room-item-box" style="margin-left:10px;"><div style="font-size:9px; color:#999;">Pass</div><div class="room-value-text">${data.roomPass || "Pending"}</div></div>`;
         } else {
-            roomContent.innerHTML = `<div class="room-locked-text"><i class="fa-solid fa-lock"></i> JOIN TO UNLOCK</div>`;
+            roomContent.innerHTML = `<div style="color:var(--red); font-weight:800; text-align:center; width:100%; font-size:11px;">JOIN TO UNLOCK</div>`;
         }
     });
 }
 
 function renderWinners(winners) {
     const container = document.getElementById('winnerListContainer');
-    if(!winners) { container.innerHTML = "Pending..."; return; }
+    if(!winners) { container.innerHTML = "Winners will be updated soon..."; return; }
     let html = "";
     Object.keys(winners).forEach(rank => {
         let color = rank == 1 ? "var(--gold)" : rank == 2 ? "var(--silver)" : "var(--bronze)";
-        html += `<div style="display:flex; align-items:center; background:#f9f9f9; padding:12px; border-radius:10px; margin-bottom:10px; border-left:5px solid ${color}"><div style="font-weight:900; margin-right:15px;">Rank ${rank}</div><div style="font-weight:800;">${winners[rank]}</div></div>`;
+        html += `<div class="winner-rank-row" style="border-left:5px solid ${color}"><div style="width:30px; font-weight:900;">#${rank}</div><div style="font-weight:800; color:#222;">${winners[rank]}</div></div>`;
     });
     container.innerHTML = html;
 }
@@ -162,15 +156,15 @@ function renderWinners(winners) {
 function renderRules(cat) {
     const rulesDiv = document.getElementById('dynamicRules');
     const isCS = cat.toUpperCase().includes("CLASH") || cat.toUpperCase().includes("CS");
-    let rulesHTML = "";
-    if(isCS) {
-        const csRules = ["Tournament rule.", "Multiple accounts = Permanent Freeze.", "Zone pack : Strictly NOT allowed.", "Throwables (Grenades/Flash): Not allowed.", "Only mobile players allowed (No Emulators).", "Minimum level required: 40.", "Character skills & Gun attributes: OFF.", "POV Recording: Mandatory for every player.", "Room ID and Password shared at exact time. Start after 10 mins. No refund for late join.", "Contact customer support for any issues.", "Share your POV first to request opponent's.", "POV must be provided within 24 hours of request.", "Missed room join: No refund.", "Unregistered invites: Kicked immediately.", "Hacks/Glitch: Permanent ban.", "Result: Declared within 1 hour."];
-        csRules.forEach((r, i) => { rulesHTML += `<div class="rule-item"><div class="rule-num">${i+1}</div><div class="rule-text">${r}</div></div>`; });
-    } else {
-        const brRules = ["BR Survival with Per Kill points system.", "No Teaming: Disqualification if caught.", "Mobile only. No emulators/panels.", "Minimum level 40 required to join.", "Unregistered invites = Kick without refund.", "POV recording mandatory from room entry.", "Provide POV within 3 hours if requested.", "No refund for missed join or kick.", "Hacks/Cheats: Permanent ban & wallet freeze.", "Results declared within 1 hour.", "Plain text names only. No stylish fonts.", "Stay in joined slot. No switching.", "ID & Pass shared 5 mins before start.", "If duo or squad match, only enter with squad entry."];
-        brRules.forEach((r, i) => { rulesHTML += `<div class="rule-item"><div class="rule-num">${i+1}</div><div class="rule-text">${r}</div></div>`; });
-    }
-    rulesDiv.innerHTML = rulesHTML;
+    let rules = isCS ? [
+        "Tournament rule.", "Multiple accounts = Permanent Freeze.", "Zone pack : Strictly NOT allowed.", "Throwables (Grenades/Flash): Not allowed.", "Only mobile players allowed (No Emulators).", "Minimum level required: 40.", "Character skills & Gun attributes: OFF.", "POV Recording: Mandatory for every player.", "Room ID and Password shared at exact time. Start after 10 mins. No refund for late join.", "Contact customer support for any issues.", "Share your POV first to request opponent's.", "POV must be provided within 24 hours of request.", "Missed room join: No refund.", "Unregistered invites: Kicked immediately.", "Hacks/Glitch: Permanent ban.", "Result: Declared within 1 hour."
+    ] : [
+        "BR Survival with Per Kill points system.", "No Teaming: Disqualification if caught.", "Mobile only. No emulators/panels.", "Minimum level 40 required to join.", "Unregistered invites = Kick without refund.", "POV recording mandatory from room entry.", "Provide POV within 3 hours if requested.", "No refund for missed join or kick.", "Hacks/Cheats: Permanent ban & wallet freeze.", "Results declared within 1 hour.", "Plain text names only. No stylish fonts.", "Stay in joined slot. No switching.", "ID & Pass shared 5 mins before start.", "If duo or squad match, only enter with squad entry."
+    ];
+    
+    let html = `<div style="font-weight:900; color:var(--p-green); font-size:11px; margin-bottom:12px; text-transform:uppercase;">${isCS ? 'CS' : 'BR'} Rules</div>`;
+    rules.forEach((r, i) => { html += `<div class="rule-item"><div class="rule-num">${i+1}</div><div class="rule-text">${r}</div></div>`; });
+    rulesDiv.innerHTML = html;
 }
 
 function showTab(type) {
