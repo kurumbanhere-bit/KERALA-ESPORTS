@@ -36,7 +36,6 @@
     .input-box label { font-size: 10px; font-weight: 800; color: #888; display: block; margin-bottom: 4px; }
     .input-box input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; font-size: 13px; font-weight: 700; background: #f9f9f9; box-sizing: border-box; outline: none; }
 
-    /* Room Card */
     .room-card-white { background: var(--white); margin: 0 15px 15px 15px; padding: 18px; border-radius: 15px; border: 2px solid var(--p-green); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     .room-grid { display: flex; justify-content: space-between; gap: 10px; }
     .room-item-box { flex: 1; background: #f9f9f9; padding: 12px; border-radius: 10px; border: 1px solid #f0f0f0; text-align: center; }
@@ -44,27 +43,24 @@
     .room-value-text { font-size: 14px; font-weight: 800; color: #222; font-family: monospace; }
     .room-locked-text { font-size: 11px; font-weight: 800; color: var(--red); text-align: center; padding: 5px; width: 100%; }
 
-    /* Tabs */
     .tabs { display: flex; background: #f0f0f0; margin: 15px; border-radius: 12px; padding: 4px; }
     .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 700; color: #777; cursor: pointer; border-radius: 10px; }
     .tab.active { background: white; color: var(--p-green); }
 
-    /* Players list */
     .player-row { background: white; margin: 0 15px 10px 15px; padding: 12px; border-radius: 12px; border: 1px solid #eee; }
     .p-header { display: flex; align-items: center; gap: 12px; }
     .player-img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: #f0f0f0; }
     .p-user-name { font-weight: 800; font-size: 14px; color: #222; }
     .team-badge { font-size: 9px; font-weight: 900; background: #eee; padding: 2px 6px; border-radius: 4px; margin-left: auto; color: #666; }
 
-    /* Footer */
     .footer { position: fixed; bottom: 0; width: 100%; background: var(--white); padding: 15px 20px; box-sizing: border-box; border-top: 1px solid #eee; }
     .btn-join { background: var(--p-green); color: var(--white); width: 100%; border: none; padding: 16px; border-radius: 12px; font-weight: 800; cursor: pointer; }
 
-    /* Winners UI Premium */
+    /* Premium Winners UI */
     .winners-container { margin: 15px; background: white; border-radius: 20px; padding: 20px; border: 2px solid var(--gold); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
     .win-header { text-align: center; margin-bottom: 20px; }
     .win-header i { font-size: 35px; color: var(--gold); margin-bottom: 8px; }
-    .win-header h2 { margin: 0; font-size: 22px; font-weight: 900; color: #222; letter-spacing: 1px; }
+    .win-header h2 { margin: 0; font-size: 22px; font-weight: 900; color: #222; }
     
     .win-row { display: flex; align-items: center; background: #f9f9f9; padding: 15px; border-radius: 15px; margin-bottom: 12px; border: 1px solid #eee; }
     .rank-badge { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; margin-right: 15px; font-size: 16px; }
@@ -74,7 +70,7 @@
     .rank-others { background: #444; }
     
     .winner-info { flex: 1; }
-    .winner-label { font-size: 10px; font-weight: 900; color: #999; text-transform: uppercase; margin-bottom: 2px; }
+    .winner-label { font-size: 10px; font-weight: 900; color: #999; text-transform: uppercase; }
     .winner-name { font-weight: 800; font-size: 16px; color: #1a1a1a; }
 </style>
 </head>
@@ -113,7 +109,7 @@
         <div class="win-header">
             <i class="fa-solid fa-trophy"></i>
             <h2>CHAMPIONS</h2>
-            <div style="font-size:11px; font-weight:bold; color:var(--p-green); margin-top:5px;">GLORY TO THE WINNERS</div>
+            <div style="font-size:11px; font-weight:bold; color:var(--p-green); margin-top:5px;">CONGRATULATIONS!</div>
         </div>
         <div id="winnerListContainer"></div>
     </div>
@@ -134,7 +130,6 @@
     <div id="prizeSection"><div id="prizeList" style="background:white; margin:0 15px; border-radius:12px; border:1px solid #eee;"></div></div>
     <div id="playerSection" style="display:none;"><div id="playerList"></div></div>
     <div id="rulesSection" style="display:none; padding: 20px; background: white; margin: 0 15px; border-radius: 12px; border: 1px solid #eee;"><div id="dynamicRules"></div></div>
-    
     <div class="footer" id="joinFooter"><button class="btn-join" id="joinBtn" onclick="handleJoin()">JOIN NOW</button></div>
 </div>
 
@@ -172,7 +167,7 @@ auth.onAuthStateChanged(user => {
 
 function renderWinners(winners) {
     const container = document.getElementById('winnerListContainer');
-    if(!winners) { container.innerHTML = "<div style='text-align:center; padding:20px; color:#888;'>Results Pending...</div>"; return; }
+    if(!winners) { container.innerHTML = "<div style='text-align:center; padding:20px; color:#888;'>Updating Results...</div>"; return; }
     let html = "";
     Object.keys(winners).sort().forEach(rank => {
         let badgeClass = rank == 1 ? "rank-1" : rank == 2 ? "rank-2" : rank == 3 ? "rank-3" : "rank-others";
@@ -189,30 +184,14 @@ function renderWinners(winners) {
     container.innerHTML = html;
 }
 
-function loadPlayers() {
-    const listDiv = document.getElementById('playerList');
-    listDiv.innerHTML = "<div style='text-align:center; padding:20px;'>Loading Players...</div>";
-    db.ref('matches/' + matchId + '/participants').on('value', snapshot => {
-        listDiv.innerHTML = "";
-        if(!snapshot.exists()) { listDiv.innerHTML = "<div style='text-align:center; padding:40px;'>No players yet.</div>"; return; }
-        snapshot.forEach(child => {
-            const p = child.val();
-            listDiv.innerHTML += `
-                <div class="player-row">
-                    <div class="p-header">
-                        <img src="${defaultIcon}" class="player-img">
-                        <div class="p-user-name">${p.playerName}</div>
-                        <div class="team-badge">${p.teamType || 'SOLO'}</div>
-                    </div>
-                </div>`;
-        });
-    });
-}
-
 function renderRules(cat) {
     const rulesDiv = document.getElementById('dynamicRules');
     const isCS = cat.toUpperCase().includes("CLASH") || cat.toUpperCase().includes("CS");
-    let rules = isCS<div class="rule-item"><div class="rule-num">1</div><div class="rule-text">Tournment rule.</div></div>
+    
+    if(isCS) {
+        rulesDiv.innerHTML = `
+            <div style="font-weight:900; color:var(--p-green); font-size:11px; margin-bottom:12px; text-transform:uppercase;">CS Tournament Rules</div>
+            <div class="rule-item"><div class="rule-num">1</div><div class="rule-text">Tournment rule.</div></div>
             <div class="rule-item"><div class="rule-num">2</div><div class="rule-text">Multiple accounts = Permanent Freeze.</div></div>
             <div class="rule-item"><div class="rule-num">3</div><div class="rule-text">Zone pack : Strictly NOT allowed.</div></div>
             <div class="rule-item"><div class="rule-num">4</div><div class="rule-text">Throwables (Grenades/Flash): Not allowed.</div></div>
@@ -220,8 +199,7 @@ function renderRules(cat) {
             <div class="rule-item"><div class="rule-num">6</div><div class="rule-text">Minimum level required: 40.</div></div>
             <div class="rule-item"><div class="rule-num">7</div><div class="rule-text">Character skills & Gun attributes: OFF.</div></div>
             <div class="rule-item"><div class="rule-num">8</div><div class="rule-text">POV Recording: Mandatory for every player.</div></div>
-            <div class="rule-item"><div class="rule-num">9</div><div class="rule-text"> Room ID and Password will be provided at the exact time. The match starts 10 minutes later. If the opponent is absent even after 10 minutes, you get the winnings and they get no refund.
-Example: For a 5:00 PM match, ID/Pass is given at 5:00, and start is at 5:10.</div></div>
+            <div class="rule-item"><div class="rule-num">9</div><div class="rule-text">Room ID and Password will be provided at the exact time. The match starts 10 minutes later. If the opponent is absent even after 10 minutes, you get the winnings and they get no refund. <br>Example: For a 5:00 PM match, ID/Pass is given at 5:00, and start is at 5:10.</div></div>
             <div class="rule-item"><div class="rule-num">10</div><div class="rule-text">If you face any problem, support or issues contact on customer support.</div></div>
             <div class="rule-item"><div class="rule-num">11</div><div class="rule-text">Share your POV first to request opponent's.</div></div>
             <div class="rule-item"><div class="rule-num">12</div><div class="rule-text">Once POV is requested, it must be provided within 24 hours. Otherwise, no winnings will be given.</div></div>
@@ -246,18 +224,36 @@ Example: For a 5:00 PM match, ID/Pass is given at 5:00, and start is at 5:10.</d
             <div class="rule-item"><div class="rule-num">11</div><div class="rule-text">Plain text names only. No stylish fonts.</div></div>
             <div class="rule-item"><div class="rule-num">12</div><div class="rule-text">Stay in joined slot. No switching.</div></div>
             <div class="rule-item"><div class="rule-num">13</div><div class="rule-text">ID & Pass shared 5 mins before start.</div></div>
-            <div class="rule-item"><div class="rule-num">14</div><div class="rule-text">If duo or squad match. only entire with squad entry. </div></div>
+            <div class="rule-item"><div class="rule-num">14</div><div class="rule-text">If duo or squad match, only entry with squad entry.</div></div>
         `;
-    let html = `<div style="font-weight:900; color:var(--p-green); font-size:11px; margin-bottom:12px; text-transform:uppercase;">MATCH RULES</div>`;
-    rules.forEach((r, i) => { html += `<div class="rule-item"><div class="rule-num">${i+1}</div><div class="rule-text">${r}</div></div>`; });
-    rulesDiv.innerHTML = html;
+    }
+}
+
+function loadPlayers() {
+    const listDiv = document.getElementById('playerList');
+    listDiv.innerHTML = "<div style='text-align:center; padding:20px;'>Loading Players...</div>";
+    db.ref('matches/' + matchId + '/participants').on('value', snapshot => {
+        listDiv.innerHTML = "";
+        if(!snapshot.exists()) { listDiv.innerHTML = "<div style='text-align:center; padding:40px;'>No players yet.</div>"; return; }
+        snapshot.forEach(child => {
+            const p = child.val();
+            listDiv.innerHTML += `
+                <div class="player-row">
+                    <div class="p-header">
+                        <img src="${defaultIcon}" class="player-img">
+                        <div class="p-user-name">${p.playerName}</div>
+                        <div class="team-badge">${p.teamType || 'SOLO'}</div>
+                    </div>
+                </div>`;
+        });
+    });
 }
 
 if(matchId) {
     db.ref('matches/' + matchId).on('value', snap => {
         const data = snap.val(); if(!data) return;
         
-        // --- STATUS HIDE LOGIC ---
+        // --- COMPLETED CHECK ---
         const status = (data.status || "").toLowerCase();
         if(status === "completed") {
             document.getElementById('winnerSection').style.display = "block";
@@ -289,7 +285,6 @@ if(matchId) {
         }
         document.getElementById('mDate').innerText = finalDateDisplay;
 
-        // Joined logic
         const participants = data.participants || {};
         const isJoined = participants[currentUid] ? true : false;
         const joinedCount = Object.keys(participants).length;
@@ -297,9 +292,9 @@ if(matchId) {
 
         const roomContent = document.getElementById('roomDetailsContent');
         if(isJoined) {
-            roomContent.innerHTML = `<div class="room-item-box"><div class="room-label-small">Room ID</div><div class="room-value-text">${data.roomId || "Pending"}</div></div><div class="room-item-box" style="margin-left:10px;"><div class="room-label-small">Password</div><div class="room-value-text">${data.roomPass || "Pending"}</div></div>`;
+            roomContent.innerHTML = `<div class="room-item-box"><div class="room-label-small">ID</div><div class="room-value-text">${data.roomId || "Pending"}</div></div><div class="room-item-box" style="margin-left:10px;"><div class="room-label-small">Pass</div><div class="room-value-text">${data.roomPass || "Pending"}</div></div>`;
         } else {
-            roomContent.innerHTML = `<div class="room-locked-text"><i class="fa-solid fa-lock"></i> JOIN TO UNLOCK ROOM</div>`;
+            roomContent.innerHTML = `<div class="room-locked-text"><i class="fa-solid fa-lock"></i> JOIN TO UNLOCK</div>`;
         }
 
         const jBtn = document.getElementById('joinBtn');
