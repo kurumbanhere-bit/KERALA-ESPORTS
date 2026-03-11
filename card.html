@@ -23,18 +23,9 @@
     .m-prize-main { font-size: 22px; font-weight: 900; color: var(--p-green); margin-top: 4px; }
     .m-date { font-size: 11px; font-weight: 800; color: var(--red); margin-top: 8px; text-transform: uppercase; display: inline-block; background: #fff5f5; padding: 4px 8px; border-radius: 5px; }
 
-    /* Rules Styling */
     .rule-item { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
     .rule-num { background: var(--p-green); color: white; min-width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; margin-top: 2px; }
     .rule-text { font-size: 12px; line-height: 1.5; font-weight: 600; color: #444; }
-
-    /* Modal Styling */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-    .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-    .modal-title { font-size: 16px; font-weight: 900; margin-bottom: 15px; color: var(--p-green); display: flex; align-items: center; gap: 8px; }
-    .input-box { margin-bottom: 12px; }
-    .input-box label { font-size: 10px; font-weight: 800; color: #888; display: block; margin-bottom: 4px; }
-    .input-box input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; font-size: 13px; font-weight: 700; background: #f9f9f9; box-sizing: border-box; outline: none; }
 
     .room-card-white { background: var(--white); margin: 0 15px 15px 15px; padding: 18px; border-radius: 15px; border: 2px solid var(--p-green); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     .room-grid { display: flex; justify-content: space-between; gap: 10px; }
@@ -56,7 +47,6 @@
     .footer { position: fixed; bottom: 0; width: 100%; background: var(--white); padding: 15px 20px; box-sizing: border-box; border-top: 1px solid #eee; }
     .btn-join { background: var(--p-green); color: var(--white); width: 100%; border: none; padding: 16px; border-radius: 12px; font-weight: 800; cursor: pointer; }
 
-    /* Premium Winners UI */
     .winners-container { margin: 15px; background: white; border-radius: 20px; padding: 20px; border: 2px solid var(--gold); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
     .win-header { text-align: center; margin-bottom: 20px; }
     .win-header i { font-size: 35px; color: var(--gold); margin-bottom: 8px; }
@@ -75,18 +65,6 @@
 </style>
 </head>
 <body>
-
-<div id="teamModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-title"><i class="fa-solid fa-users"></i> <span id="mTypeTitle">TEAM</span> REGISTRATION</div>
-        <div style="background:#f0fdf4; padding:10px; border-radius:10px; margin-bottom:15px; border:1px dashed var(--p-green); font-size:12px; font-weight:bold;">
-            Total Deduction: ₹<span id="totalFeeText">0</span>
-        </div>
-        <div id="dynamicInputs"></div>
-        <button class="btn-join" onclick="confirmTeamJoin()">CONFIRM & JOIN</button>
-        <button onclick="closeModal()" style="width:100%; background:none; border:none; color:var(--red); font-weight:800; margin-top:12px; font-size:12px; cursor:pointer;">CANCEL</button>
-    </div>
-</div>
 
 <div class="header">
     <i class="fa-solid fa-arrow-left" onclick="history.back()"></i>
@@ -149,7 +127,7 @@ const auth = firebase.auth();
 const matchId = new URLSearchParams(window.location.search).get('id');
 
 const defaultIcon = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-let currentUid = "", userGameName = "", currentBalance = 0, entryFee = 0, matchCategory = "", matchTeamType = "";
+let currentUid = "", userGameName = "", currentBalance = 0, entryFee = 0, matchCategory = "";
 
 auth.onAuthStateChanged(user => {
     if(user) {
@@ -165,19 +143,25 @@ auth.onAuthStateChanged(user => {
     } else { window.location.href = "login.html"; }
 });
 
+// FIXED WINNERS FUNCTION
 function renderWinners(winners) {
     const container = document.getElementById('winnerListContainer');
     if(!winners) { container.innerHTML = "<div style='text-align:center; padding:20px; color:#888;'>Updating Results...</div>"; return; }
     let html = "";
-    Object.keys(winners).sort().forEach(rank => {
+    Object.keys(winners).sort((a, b) => a - b).forEach(rank => {
         let badgeClass = rank == 1 ? "rank-1" : rank == 2 ? "rank-2" : rank == 3 ? "rank-3" : "rank-others";
         let icon = rank == 1 ? "fa-crown" : rank <= 3 ? "fa-medal" : "";
+        
+        // Error fix: Handle object/string winner data
+        let winnerData = winners[rank];
+        let displayName = (typeof winnerData === 'object') ? (winnerData.name || winnerData.playerName || "Unknown Player") : winnerData;
+
         html += `
             <div class="win-row">
                 <div class="rank-badge ${badgeClass}">${icon ? `<i class="fa-solid ${icon}"></i>` : rank}</div>
                 <div class="winner-info">
                     <div class="winner-label">POSITION ${rank}</div>
-                    <div class="winner-name">${winners[rank]}</div>
+                    <div class="winner-name">${displayName}</div>
                 </div>
             </div>`;
     });
@@ -199,10 +183,10 @@ function renderRules(cat) {
             <div class="rule-item"><div class="rule-num">6</div><div class="rule-text">Minimum level required: 40.</div></div>
             <div class="rule-item"><div class="rule-num">7</div><div class="rule-text">Character skills & Gun attributes: OFF.</div></div>
             <div class="rule-item"><div class="rule-num">8</div><div class="rule-text">POV Recording: Mandatory for every player.</div></div>
-            <div class="rule-item"><div class="rule-num">9</div><div class="rule-text">Room ID and Password will be provided at the exact time. The match starts 10 minutes later. If the opponent is absent even after 10 minutes, you get the winnings and they get no refund. <br>Example: For a 5:00 PM match, ID/Pass is given at 5:00, and start is at 5:10.</div></div>
-            <div class="rule-item"><div class="rule-num">10</div><div class="rule-text">If you face any problem, support or issues contact on customer support.</div></div>
+            <div class="rule-item"><div class="rule-num">9</div><div class="rule-text">Room ID/Pass at exact time. Match starts 10 mins later. No refund for absence.</div></div>
+            <div class="rule-item"><div class="rule-num">10</div><div class="rule-text">Issues? Contact customer support.</div></div>
             <div class="rule-item"><div class="rule-num">11</div><div class="rule-text">Share your POV first to request opponent's.</div></div>
-            <div class="rule-item"><div class="rule-num">12</div><div class="rule-text">Once POV is requested, it must be provided within 24 hours. Otherwise, no winnings will be given.</div></div>
+            <div class="rule-item"><div class="rule-num">12</div><div class="rule-text">POV must be provided within 24 hours if requested.</div></div>
             <div class="rule-item"><div class="rule-num">13</div><div class="rule-text">Missed room join: No refund.</div></div>
             <div class="rule-item"><div class="rule-num">14</div><div class="rule-text">Unregistered invites: Kicked immediately.</div></div>
             <div class="rule-item"><div class="rule-num">15</div><div class="rule-text">Hacks/Glitch/Unfair use: Permanent ban.</div></div>
@@ -224,7 +208,7 @@ function renderRules(cat) {
             <div class="rule-item"><div class="rule-num">11</div><div class="rule-text">Plain text names only. No stylish fonts.</div></div>
             <div class="rule-item"><div class="rule-num">12</div><div class="rule-text">Stay in joined slot. No switching.</div></div>
             <div class="rule-item"><div class="rule-num">13</div><div class="rule-text">ID & Pass shared 5 mins before start.</div></div>
-            <div class="rule-item"><div class="rule-num">14</div><div class="rule-text">If duo or squad match, only entry with squad entry.</div></div>
+            <div class="rule-item"><div class="rule-num">14</div><div class="rule-text">Duo/Squad: Only with squad entry.</div></div>
         `;
     }
 }
@@ -253,7 +237,6 @@ if(matchId) {
     db.ref('matches/' + matchId).on('value', snap => {
         const data = snap.val(); if(!data) return;
         
-        // --- COMPLETED CHECK ---
         const status = (data.status || "").toLowerCase();
         if(status === "completed") {
             document.getElementById('winnerSection').style.display = "block";
@@ -265,25 +248,11 @@ if(matchId) {
         }
 
         matchCategory = data.category || "Tournament";
-        matchTeamType = data.teamType || "SOLO";
         entryFee = parseInt(data.entry || 0);
-        document.getElementById('mTitle').innerText = `${matchCategory} (${matchTeamType})`;
+        document.getElementById('mTitle').innerText = `${matchCategory} (${data.teamType || 'SOLO'})`;
         document.getElementById('mPrizeHeader').innerText = "₹" + (data.prize || 0);
         document.getElementById('mThumb').src = data.thumbnail || "";
-        
-        // Date Fix
-        const rawTime = data.time || ""; 
-        let finalDateDisplay = "PENDING";
-        if (rawTime) {
-            let d = rawTime.includes('T') ? new Date(rawTime) : new Date(data.date + " " + rawTime);
-            if (!isNaN(d.getTime())) {
-                const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-                let h = d.getHours(), m = d.getMinutes(), ampm = h >= 12 ? 'PM' : 'AM';
-                h = h % 12 || 12;
-                finalDateDisplay = `${d.getDate()} ${months[d.getMonth()]} ${h}:${m < 10 ? '0'+m : m} ${ampm}`;
-            }
-        }
-        document.getElementById('mDate').innerText = finalDateDisplay;
+        document.getElementById('mDate').innerText = data.time || "PENDING";
 
         const participants = data.participants || {};
         const isJoined = participants[currentUid] ? true : false;
@@ -314,28 +283,26 @@ if(matchId) {
 
 function handleJoin() {
     if(currentBalance < entryFee) return alert("Insufficient Balance!");
-    if(confirm("Join Match for ₹" + entryFee + "?")) executeJoin(entryFee, null);
-}
-
-function executeJoin(fee, teamInfo) {
-    const userRef = db.ref('users/' + currentUid + '/wallet');
-    userRef.transaction(w => {
-        let dep = 0, win = 0;
-        if (w && typeof w === 'object') { dep = parseInt(w.deposit || 0); win = parseInt(w.winnings || 0); }
-        else { dep = parseInt(w || 0); }
-        if((dep + win) < fee) return;
-        let rem = fee;
-        if (dep >= rem) dep -= rem; else { rem -= dep; dep = 0; win -= rem; }
-        return { deposit: dep, winnings: win };
-    }, (err, committed) => {
-        if(committed) {
-            db.ref(`matches/${matchId}/participants/${currentUid}`).set({ uid: currentUid, playerName: userGameName, teamType: matchTeamType, joinedAt: Date.now() }).then(() => {
-                db.ref(`matches/${matchId}/joined`).transaction(c => (c || 0) + 1);
-                alert("Joined Successfully! 🔥");
-                location.reload();
-            });
-        }
-    });
+    if(confirm("Join Match for ₹" + entryFee + "?")) {
+        const userRef = db.ref('users/' + currentUid + '/wallet');
+        userRef.transaction(w => {
+            let dep = 0, win = 0;
+            if (w && typeof w === 'object') { dep = parseInt(w.deposit || 0); win = parseInt(w.winnings || 0); }
+            else { dep = parseInt(w || 0); }
+            if((dep + win) < entryFee) return;
+            let rem = entryFee;
+            if (dep >= rem) dep -= rem; else { rem -= dep; dep = 0; win -= rem; }
+            return { deposit: dep, winnings: win };
+        }, (err, committed) => {
+            if(committed) {
+                db.ref(`matches/${matchId}/participants/${currentUid}`).set({ uid: currentUid, playerName: userGameName, joinedAt: Date.now() }).then(() => {
+                    db.ref(`matches/${matchId}/joined`).transaction(c => (c || 0) + 1);
+                    alert("Joined Successfully! 🔥");
+                    location.reload();
+                });
+            }
+        });
+    }
 }
 
 function showTab(type) {
