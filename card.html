@@ -36,6 +36,7 @@
     .input-box label { font-size: 10px; font-weight: 800; color: #888; display: block; margin-bottom: 4px; }
     .input-box input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; font-size: 13px; font-weight: 700; background: #f9f9f9; box-sizing: border-box; outline: none; }
 
+    /* Room Card */
     .room-card-white { background: var(--white); margin: 0 15px 15px 15px; padding: 18px; border-radius: 15px; border: 2px solid var(--p-green); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     .room-grid { display: flex; justify-content: space-between; gap: 10px; }
     .room-item-box { flex: 1; background: #f9f9f9; padding: 12px; border-radius: 10px; border: 1px solid #f0f0f0; text-align: center; }
@@ -43,37 +44,38 @@
     .room-value-text { font-size: 14px; font-weight: 800; color: #222; font-family: monospace; }
     .room-locked-text { font-size: 11px; font-weight: 800; color: var(--red); text-align: center; padding: 5px; width: 100%; }
 
+    /* Tabs */
     .tabs { display: flex; background: #f0f0f0; margin: 15px; border-radius: 12px; padding: 4px; }
     .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 700; color: #777; cursor: pointer; border-radius: 10px; }
     .tab.active { background: white; color: var(--p-green); }
 
+    /* Players list */
     .player-row { background: white; margin: 0 15px 10px 15px; padding: 12px; border-radius: 12px; border: 1px solid #eee; }
     .p-header { display: flex; align-items: center; gap: 12px; }
     .player-img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: #f0f0f0; }
     .p-user-name { font-weight: 800; font-size: 14px; color: #222; }
     .team-badge { font-size: 9px; font-weight: 900; background: #eee; padding: 2px 6px; border-radius: 4px; margin-left: auto; color: #666; }
-    .squad-members-list { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #eee; display: flex; flex-wrap: wrap; gap: 6px; }
-    .member-chip { font-size: 11px; font-weight: 700; background: #f9f9f9; padding: 3px 10px; border-radius: 15px; border: 1px solid #eee; color: #555; }
 
+    /* Footer */
     .footer { position: fixed; bottom: 0; width: 100%; background: var(--white); padding: 15px 20px; box-sizing: border-box; border-top: 1px solid #eee; }
     .btn-join { background: var(--p-green); color: var(--white); width: 100%; border: none; padding: 16px; border-radius: 12px; font-weight: 800; cursor: pointer; }
 
-    /* Premium Winners UI */
+    /* Winners UI Premium */
     .winners-container { margin: 15px; background: white; border-radius: 20px; padding: 20px; border: 2px solid var(--gold); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
     .win-header { text-align: center; margin-bottom: 20px; }
-    .win-header i { font-size: 30px; color: var(--gold); margin-bottom: 5px; }
-    .win-header h2 { margin: 0; font-size: 20px; font-weight: 900; color: #222; }
+    .win-header i { font-size: 35px; color: var(--gold); margin-bottom: 8px; }
+    .win-header h2 { margin: 0; font-size: 22px; font-weight: 900; color: #222; letter-spacing: 1px; }
     
-    .win-row { display: flex; align-items: center; background: #f8f8f8; padding: 12px; border-radius: 15px; margin-bottom: 10px; transition: 0.3s; border: 1px solid #eee; }
-    .rank-circle { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; margin-right: 15px; font-size: 14px; }
-    .rank-1 { background: linear-gradient(45deg, #FFD700, #FFA500); box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3); }
-    .rank-2 { background: linear-gradient(45deg, #C0C0C0, #808080); box-shadow: 0 4px 10px rgba(192, 192, 192, 0.3); }
-    .rank-3 { background: linear-gradient(45deg, #CD7F32, #A0522D); box-shadow: 0 4px 10px rgba(205, 127, 50, 0.3); }
-    .rank-other { background: #555; }
+    .win-row { display: flex; align-items: center; background: #f9f9f9; padding: 15px; border-radius: 15px; margin-bottom: 12px; border: 1px solid #eee; }
+    .rank-badge { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; margin-right: 15px; font-size: 16px; }
+    .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4); }
+    .rank-2 { background: linear-gradient(135deg, #C0C0C0, #808080); box-shadow: 0 4px 10px rgba(192, 192, 192, 0.3); }
+    .rank-3 { background: linear-gradient(135deg, #CD7F32, #A0522D); box-shadow: 0 4px 10px rgba(205, 127, 50, 0.3); }
+    .rank-others { background: #444; }
     
-    .winner-details { flex: 1; }
-    .winner-name { font-weight: 800; font-size: 15px; color: #222; }
-    .winner-label { font-size: 10px; color: #888; font-weight: bold; text-transform: uppercase; }
+    .winner-info { flex: 1; }
+    .winner-label { font-size: 10px; font-weight: 900; color: #999; text-transform: uppercase; margin-bottom: 2px; }
+    .winner-name { font-weight: 800; font-size: 16px; color: #1a1a1a; }
 </style>
 </head>
 <body>
@@ -111,29 +113,29 @@
         <div class="win-header">
             <i class="fa-solid fa-trophy"></i>
             <h2>CHAMPIONS</h2>
-            <p style="font-size:11px; font-weight:bold; color:var(--p-green);">CONGRATULATIONS TO THE WINNERS!</p>
+            <div style="font-size:11px; font-weight:bold; color:var(--p-green); margin-top:5px;">GLORY TO THE WINNERS</div>
         </div>
         <div id="winnerListContainer"></div>
     </div>
 </div>
 
-<div id="mainContentUI">
+<div id="activeMatchView">
     <div class="room-card-white" id="roomInfoBox">
-        <div class="room-title-label"><i class="fa-solid fa-door-open" style="color:var(--p-green)"></i> Room Details</div>
+        <div class="room-title-label" style="font-size:12px; font-weight:bold; margin-bottom:10px;"><i class="fa-solid fa-door-open" style="color:var(--p-green)"></i> Room Details</div>
         <div class="room-grid" id="roomDetailsContent"></div>
     </div>
 
-    <div id="activeMatchUI">
-        <div class="tabs">
-            <div class="tab active" onclick="showTab('prize')">Prize Pool</div>
-            <div class="tab" onclick="showTab('players')">Players</div>
-            <div class="tab" onclick="showTab('rules')">Rules</div>
-        </div>
-        <div id="prizeSection"><div id="prizeList" style="background:white; margin:0 15px; border-radius:12px; border:1px solid #eee;"></div></div>
-        <div id="playerSection" style="display:none;"><div id="playerList"></div></div>
-        <div id="rulesSection" style="display:none; padding: 20px; background: white; margin: 0 15px; border-radius: 12px; border: 1px solid #eee;"><div id="dynamicRules"></div></div>
-        <div class="footer" id="joinFooter"><button class="btn-join" id="joinBtn" onclick="handleJoin()">JOIN NOW</button></div>
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('prize')">Prize Pool</div>
+        <div class="tab" onclick="showTab('players')">Players</div>
+        <div class="tab" onclick="showTab('rules')">Rules</div>
     </div>
+
+    <div id="prizeSection"><div id="prizeList" style="background:white; margin:0 15px; border-radius:12px; border:1px solid #eee;"></div></div>
+    <div id="playerSection" style="display:none;"><div id="playerList"></div></div>
+    <div id="rulesSection" style="display:none; padding: 20px; background: white; margin: 0 15px; border-radius: 12px; border: 1px solid #eee;"><div id="dynamicRules"></div></div>
+    
+    <div class="footer" id="joinFooter"><button class="btn-join" id="joinBtn" onclick="handleJoin()">JOIN NOW</button></div>
 </div>
 
 <script>
@@ -168,24 +170,18 @@ auth.onAuthStateChanged(user => {
     } else { window.location.href = "login.html"; }
 });
 
-// Render Winner UI
 function renderWinners(winners) {
     const container = document.getElementById('winnerListContainer');
-    if(!winners) { 
-        container.innerHTML = "<div style='text-align:center; padding:20px; color:#888; font-weight:bold;'>Winners not announced yet!</div>";
-        return; 
-    }
+    if(!winners) { container.innerHTML = "<div style='text-align:center; padding:20px; color:#888;'>Results Pending...</div>"; return; }
     let html = "";
     Object.keys(winners).sort().forEach(rank => {
-        let rankClass = rank == 1 ? "rank-1" : rank == 2 ? "rank-2" : rank == 3 ? "rank-3" : "rank-other";
-        let icon = rank == 1 ? "fa-crown" : "fa-medal";
+        let badgeClass = rank == 1 ? "rank-1" : rank == 2 ? "rank-2" : rank == 3 ? "rank-3" : "rank-others";
+        let icon = rank == 1 ? "fa-crown" : rank <= 3 ? "fa-medal" : "";
         html += `
             <div class="win-row">
-                <div class="rank-circle ${rankClass}">
-                    ${rank <= 3 ? `<i class="fa-solid ${icon}"></i>` : rank}
-                </div>
-                <div class="winner-details">
-                    <div class="winner-label">RANK ${rank}</div>
+                <div class="rank-badge ${badgeClass}">${icon ? `<i class="fa-solid ${icon}"></i>` : rank}</div>
+                <div class="winner-info">
+                    <div class="winner-label">POSITION ${rank}</div>
                     <div class="winner-name">${winners[rank]}</div>
                 </div>
             </div>`;
@@ -201,15 +197,14 @@ function loadPlayers() {
         if(!snapshot.exists()) { listDiv.innerHTML = "<div style='text-align:center; padding:40px;'>No players yet.</div>"; return; }
         snapshot.forEach(child => {
             const p = child.val();
-            const teamInfo = p.teamInfo || null;
-            let html = `<div class="player-row"><div class="p-header"><img src="${defaultIcon}" class="player-img"><div class="p-user-name">${p.playerName}</div><div class="team-badge">${p.teamType || 'SOLO'}</div></div>`;
-            if(teamInfo && teamInfo.members) {
-                html += `<div class="squad-members-list">`;
-                teamInfo.members.forEach((m, idx) => { if(idx !== 0) html += `<span class="member-chip"><i class="fa fa-user" style="font-size:8px;"></i> ${m}</span>`; });
-                html += `</div>`;
-            }
-            html += `</div>`;
-            listDiv.innerHTML += html;
+            listDiv.innerHTML += `
+                <div class="player-row">
+                    <div class="p-header">
+                        <img src="${defaultIcon}" class="player-img">
+                        <div class="p-user-name">${p.playerName}</div>
+                        <div class="team-badge">${p.teamType || 'SOLO'}</div>
+                    </div>
+                </div>`;
         });
     });
 }
@@ -218,11 +213,11 @@ function renderRules(cat) {
     const rulesDiv = document.getElementById('dynamicRules');
     const isCS = cat.toUpperCase().includes("CLASH") || cat.toUpperCase().includes("CS");
     let rules = isCS ? [
-        "Tournament rule.", "Multiple accounts = Permanent Freeze.", "Zone pack : Strictly NOT allowed.", "Throwables (Grenades/Flash): Not allowed.", "Only mobile players allowed (No Emulators).", "Minimum level required: 40.", "Character skills & Gun attributes: OFF.", "POV Recording: Mandatory for every player.", "Room ID and Password shared at exact time. Start after 10 mins.", "POV must be provided within 24 hours of request.", "Hacks/Glitch: Permanent ban.", "Result: Declared within 1 hour."
+        "Tournament rule.", "Multiple accounts = Permanent Freeze.", "Zone pack : Strictly NOT allowed.", "Throwables (Grenades/Flash): Not allowed.", "Only mobile players allowed (No Emulators).", "Minimum level required: 40.", "Character skills & Gun attributes: OFF.", "POV Recording: Mandatory.", "Result: Declared within 1 hour."
     ] : [
-        "BR Survival with Per Kill points system.", "No Teaming: Disqualification if caught.", "Mobile only. No emulators/panels.", "Minimum level 40 required to join.", "POV recording mandatory from room entry.", "Hacks/Cheats: Permanent ban.", "Results declared within 1 hour.", "ID & Pass shared 5 mins before start."
+        "BR Survival with Per Kill points system.", "No Teaming: Disqualification if caught.", "Mobile only. No emulators.", "Minimum level 40 required.", "POV recording mandatory.", "Hacks/Cheats: Permanent ban.", "ID & Pass shared 5 mins before start."
     ];
-    let html = `<div style="font-weight:900; color:var(--p-green); font-size:11px; margin-bottom:12px; text-transform:uppercase;">Tournament Rules</div>`;
+    let html = `<div style="font-weight:900; color:var(--p-green); font-size:11px; margin-bottom:12px; text-transform:uppercase;">MATCH RULES</div>`;
     rules.forEach((r, i) => { html += `<div class="rule-item"><div class="rule-num">${i+1}</div><div class="rule-text">${r}</div></div>`; });
     rulesDiv.innerHTML = html;
 }
@@ -231,26 +226,25 @@ if(matchId) {
     db.ref('matches/' + matchId).on('value', snap => {
         const data = snap.val(); if(!data) return;
         
-        // --- CASE INSENSITIVE STATUS CHECK ---
+        // --- STATUS HIDE LOGIC ---
         const status = (data.status || "").toLowerCase();
         if(status === "completed") {
             document.getElementById('winnerSection').style.display = "block";
-            document.getElementById('mainContentUI').style.display = "none";
+            document.getElementById('activeMatchView').style.display = "none";
             renderWinners(data.winners);
         } else {
             document.getElementById('winnerSection').style.display = "none";
-            document.getElementById('mainContentUI').style.display = "block";
+            document.getElementById('activeMatchView').style.display = "block";
         }
 
         matchCategory = data.category || "Tournament";
         matchTeamType = data.teamType || "SOLO";
         entryFee = parseInt(data.entry || 0);
-        
         document.getElementById('mTitle').innerText = `${matchCategory} (${matchTeamType})`;
         document.getElementById('mPrizeHeader').innerText = "₹" + (data.prize || 0);
         document.getElementById('mThumb').src = data.thumbnail || "";
         
-        // Date Logic
+        // Date Fix
         const rawTime = data.time || ""; 
         let finalDateDisplay = "PENDING";
         if (rawTime) {
@@ -264,22 +258,21 @@ if(matchId) {
         }
         document.getElementById('mDate').innerText = finalDateDisplay;
 
+        // Joined logic
         const participants = data.participants || {};
         const isJoined = participants[currentUid] ? true : false;
         const joinedCount = Object.keys(participants).length;
-        const maxSlots = parseInt(data.max || 48);
-        document.getElementById('headerTitle').innerText = `JOINED ${joinedCount}/${maxSlots}`;
+        document.getElementById('headerTitle').innerText = `JOINED ${joinedCount}/${data.max || 48}`;
 
         const roomContent = document.getElementById('roomDetailsContent');
         if(isJoined) {
-            roomContent.innerHTML = `<div class="room-item-box"><div class="room-label-small">ID</div><div class="room-value-text">${data.roomId || "Pending"}</div></div><div class="room-item-box" style="margin-left:10px;"><div class="room-label-small">Pass</div><div class="room-value-text">${data.roomPass || "Pending"}</div></div>`;
+            roomContent.innerHTML = `<div class="room-item-box"><div class="room-label-small">Room ID</div><div class="room-value-text">${data.roomId || "Pending"}</div></div><div class="room-item-box" style="margin-left:10px;"><div class="room-label-small">Password</div><div class="room-value-text">${data.roomPass || "Pending"}</div></div>`;
         } else {
-            roomContent.innerHTML = `<div class="room-locked-text"><i class="fa-solid fa-lock"></i> JOIN TO UNLOCK</div>`;
+            roomContent.innerHTML = `<div class="room-locked-text"><i class="fa-solid fa-lock"></i> JOIN TO UNLOCK ROOM</div>`;
         }
 
         const jBtn = document.getElementById('joinBtn');
         if(isJoined) { jBtn.innerText = "JOINED"; jBtn.disabled = true; jBtn.style.background = "#888"; }
-        else if(joinedCount >= maxSlots) { jBtn.innerText = "MATCH FULL"; jBtn.disabled = true; }
         else { jBtn.innerText = "JOIN NOW - ₹" + entryFee; jBtn.disabled = false; }
 
         let pl = "";
@@ -295,30 +288,7 @@ if(matchId) {
 
 function handleJoin() {
     if(currentBalance < entryFee) return alert("Insufficient Balance!");
-    if(matchTeamType === "SQUAD" || matchTeamType === "DUO") {
-        const count = matchTeamType === "SQUAD" ? 4 : 2;
-        document.getElementById('mTypeTitle').innerText = matchTeamType;
-        document.getElementById('totalFeeText').innerText = entryFee * count;
-        let html = `<div class="input-box"><label>PLAYER 1 (LEADER)</label><input type="text" value="${userGameName}" readonly style="background:#eee;"></div>`;
-        for(let i=2; i<=count; i++) html += `<div class="input-box"><label>PLAYER ${i} NAME & ID</label><input type="text" id="p${i}Input" placeholder="Name - ID"></div>`;
-        document.getElementById('dynamicInputs').innerHTML = html;
-        document.getElementById('teamModal').style.display = 'flex';
-    } else { if(confirm("Join Solo for ₹" + entryFee + "?")) executeJoin(entryFee, null); }
-}
-
-function closeModal() { document.getElementById('teamModal').style.display = 'none'; }
-
-function confirmTeamJoin() {
-    const count = matchTeamType === "SQUAD" ? 4 : 2;
-    let members = [userGameName];
-    for(let i=2; i<=count; i++) {
-        let val = document.getElementById(`p${i}Input`).value.trim();
-        if(!val) return alert(`Enter Player ${i} details!`);
-        members.push(val);
-    }
-    const teamFee = entryFee * count;
-    if(currentBalance < teamFee) return alert("Insufficient balance!");
-    executeJoin(teamFee, { members: members, teamId: "T-" + Date.now().toString().slice(-4) });
+    if(confirm("Join Match for ₹" + entryFee + "?")) executeJoin(entryFee, null);
 }
 
 function executeJoin(fee, teamInfo) {
@@ -333,9 +303,7 @@ function executeJoin(fee, teamInfo) {
         return { deposit: dep, winnings: win };
     }, (err, committed) => {
         if(committed) {
-            const updates = {};
-            updates[`matches/${matchId}/participants/${currentUid}`] = { uid: currentUid, playerName: userGameName, teamType: matchTeamType, teamInfo: teamInfo, joinedAt: Date.now() };
-            db.ref().update(updates).then(() => {
+            db.ref(`matches/${matchId}/participants/${currentUid}`).set({ uid: currentUid, playerName: userGameName, teamType: matchTeamType, joinedAt: Date.now() }).then(() => {
                 db.ref(`matches/${matchId}/joined`).transaction(c => (c || 0) + 1);
                 alert("Joined Successfully! 🔥");
                 location.reload();
