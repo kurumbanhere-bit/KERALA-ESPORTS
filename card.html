@@ -212,11 +212,42 @@ function loadPlayers() {
 function renderRules(cat) {
     const rulesDiv = document.getElementById('dynamicRules');
     const isCS = cat.toUpperCase().includes("CLASH") || cat.toUpperCase().includes("CS");
-    let rules = isCS ? [
-        "Tournament rule.", "Multiple accounts = Permanent Freeze.", "Zone pack : Strictly NOT allowed.", "Throwables (Grenades/Flash): Not allowed.", "Only mobile players allowed (No Emulators).", "Minimum level required: 40.", "Character skills & Gun attributes: OFF.", "POV Recording: Mandatory.", "Result: Declared within 1 hour."
-    ] : [
-        "BR Survival with Per Kill points system.", "No Teaming: Disqualification if caught.", "Mobile only. No emulators.", "Minimum level 40 required.", "POV recording mandatory.", "Hacks/Cheats: Permanent ban.", "ID & Pass shared 5 mins before start."
-    ];
+    let rules = isCS<div class="rule-item"><div class="rule-num">1</div><div class="rule-text">Tournment rule.</div></div>
+            <div class="rule-item"><div class="rule-num">2</div><div class="rule-text">Multiple accounts = Permanent Freeze.</div></div>
+            <div class="rule-item"><div class="rule-num">3</div><div class="rule-text">Zone pack : Strictly NOT allowed.</div></div>
+            <div class="rule-item"><div class="rule-num">4</div><div class="rule-text">Throwables (Grenades/Flash): Not allowed.</div></div>
+            <div class="rule-item"><div class="rule-num">5</div><div class="rule-text">Only mobile players allowed (No Emulators).</div></div>
+            <div class="rule-item"><div class="rule-num">6</div><div class="rule-text">Minimum level required: 40.</div></div>
+            <div class="rule-item"><div class="rule-num">7</div><div class="rule-text">Character skills & Gun attributes: OFF.</div></div>
+            <div class="rule-item"><div class="rule-num">8</div><div class="rule-text">POV Recording: Mandatory for every player.</div></div>
+            <div class="rule-item"><div class="rule-num">9</div><div class="rule-text"> Room ID and Password will be provided at the exact time. The match starts 10 minutes later. If the opponent is absent even after 10 minutes, you get the winnings and they get no refund.
+Example: For a 5:00 PM match, ID/Pass is given at 5:00, and start is at 5:10.</div></div>
+            <div class="rule-item"><div class="rule-num">10</div><div class="rule-text">If you face any problem, support or issues contact on customer support.</div></div>
+            <div class="rule-item"><div class="rule-num">11</div><div class="rule-text">Share your POV first to request opponent's.</div></div>
+            <div class="rule-item"><div class="rule-num">12</div><div class="rule-text">Once POV is requested, it must be provided within 24 hours. Otherwise, no winnings will be given.</div></div>
+            <div class="rule-item"><div class="rule-num">13</div><div class="rule-text">Missed room join: No refund.</div></div>
+            <div class="rule-item"><div class="rule-num">14</div><div class="rule-text">Unregistered invites: Kicked immediately.</div></div>
+            <div class="rule-item"><div class="rule-num">15</div><div class="rule-text">Hacks/Glitch/Unfair use: Permanent ban.</div></div>
+            <div class="rule-item"><div class="rule-num">16</div><div class="rule-text">Result: Declared within 1 hour.</div></div>
+        `;
+    } else {
+        rulesDiv.innerHTML = `
+            <div style="font-weight:900; color:var(--p-green); font-size:11px; margin-bottom:12px; text-transform:uppercase;">BR Tournament Rules</div>
+            <div class="rule-item"><div class="rule-num">1</div><div class="rule-text">BR Survival with Per Kill points system.</div></div>
+            <div class="rule-item"><div class="rule-num">2</div><div class="rule-text">No Teaming: Disqualification if caught.</div></div>
+            <div class="rule-item"><div class="rule-num">3</div><div class="rule-text">Mobile only. No emulators/panels.</div></div>
+            <div class="rule-item"><div class="rule-num">4</div><div class="rule-text">Minimum level 40 required to join.</div></div>
+            <div class="rule-item"><div class="rule-num">5</div><div class="rule-text">Unregistered invites = Kick without refund.</div></div>
+            <div class="rule-item"><div class="rule-num">6</div><div class="rule-text">POV recording mandatory from room entry.</div></div>
+            <div class="rule-item"><div class="rule-num">7</div><div class="rule-text">Provide POV within 3 hours if requested.</div></div>
+            <div class="rule-item"><div class="rule-num">8</div><div class="rule-text">No refund for missed join or kick.</div></div>
+            <div class="rule-item"><div class="rule-num">9</div><div class="rule-text">Hacks/Cheats: Permanent ban & wallet freeze.</div></div>
+            <div class="rule-item"><div class="rule-num">10</div><div class="rule-text">Results declared within 1 hour.</div></div>
+            <div class="rule-item"><div class="rule-num">11</div><div class="rule-text">Plain text names only. No stylish fonts.</div></div>
+            <div class="rule-item"><div class="rule-num">12</div><div class="rule-text">Stay in joined slot. No switching.</div></div>
+            <div class="rule-item"><div class="rule-num">13</div><div class="rule-text">ID & Pass shared 5 mins before start.</div></div>
+            <div class="rule-item"><div class="rule-num">14</div><div class="rule-text">If duo or squad match. only entire with squad entry. </div></div>
+        `;
     let html = `<div style="font-weight:900; color:var(--p-green); font-size:11px; margin-bottom:12px; text-transform:uppercase;">MATCH RULES</div>`;
     rules.forEach((r, i) => { html += `<div class="rule-item"><div class="rule-num">${i+1}</div><div class="rule-text">${r}</div></div>`; });
     rulesDiv.innerHTML = html;
