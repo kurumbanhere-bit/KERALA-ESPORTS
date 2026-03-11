@@ -28,14 +28,7 @@
     .rule-num { background: var(--p-green); color: white; min-width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; margin-top: 2px; }
     .rule-text { font-size: 12px; line-height: 1.5; font-weight: 600; color: #444; }
 
-    /* Modal Styling */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-    .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-    .modal-title { font-size: 16px; font-weight: 900; margin-bottom: 15px; color: var(--p-green); display: flex; align-items: center; gap: 8px; }
-    .input-box { margin-bottom: 12px; }
-    .input-box label { font-size: 10px; font-weight: 800; color: #888; display: block; margin-bottom: 4px; }
-    .input-box input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; font-size: 13px; font-weight: 700; background: #f9f9f9; box-sizing: border-box; outline: none; }
-
+    /* Room Styling */
     .room-card-white { background: var(--white); margin: 0 15px 15px 15px; padding: 18px; border-radius: 15px; border: 2px solid var(--p-green); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     .room-grid { display: flex; justify-content: space-between; gap: 10px; }
     .room-item-box { flex: 1; background: #f9f9f9; padding: 12px; border-radius: 10px; border: 1px solid #f0f0f0; text-align: center; }
@@ -43,38 +36,19 @@
     .room-value-text { font-size: 14px; font-weight: 800; color: #222; font-family: monospace; }
     .room-locked-text { font-size: 11px; font-weight: 800; color: var(--red); text-align: center; padding: 5px; width: 100%; }
 
+    /* Tabs Styling */
     .tabs { display: flex; background: #f0f0f0; margin: 15px; border-radius: 12px; padding: 4px; }
     .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 700; color: #777; cursor: pointer; border-radius: 10px; }
     .tab.active { background: white; color: var(--p-green); }
 
-    .player-row { background: white; margin: 0 15px 10px 15px; padding: 12px; border-radius: 12px; border: 1px solid #eee; }
-    .p-header { display: flex; align-items: center; gap: 12px; }
-    .player-img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: #f0f0f0; }
-    .p-user-name { font-weight: 800; font-size: 14px; color: #222; }
-    .team-badge { font-size: 9px; font-weight: 900; background: #eee; padding: 2px 6px; border-radius: 4px; margin-left: auto; color: #666; }
-    .squad-members-list { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #eee; display: flex; flex-wrap: wrap; gap: 6px; }
-    .member-chip { font-size: 11px; font-weight: 700; background: #f9f9f9; padding: 3px 10px; border-radius: 15px; border: 1px solid #eee; color: #555; }
+    /* Winner UI */
+    .winner-card { background: white; margin: 15px; border-radius: 15px; border: 2px solid var(--gold); padding: 20px; text-align: center; }
 
     .footer { position: fixed; bottom: 0; width: 100%; background: var(--white); padding: 15px 20px; box-sizing: border-box; border-top: 1px solid #eee; }
     .btn-join { background: var(--p-green); color: var(--white); width: 100%; border: none; padding: 16px; border-radius: 12px; font-weight: 800; cursor: pointer; }
-
-    /* Winner UI */
-    .winner-card { background: white; margin: 15px; border-radius: 15px; border: 2px solid var(--gold); padding: 20px; text-align: center; }
 </style>
 </head>
 <body>
-
-<div id="teamModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-title"><i class="fa-solid fa-users"></i> <span id="mTypeTitle">TEAM</span> REGISTRATION</div>
-        <div style="background:#f0fdf4; padding:10px; border-radius:10px; margin-bottom:15px; border:1px dashed var(--p-green); font-size:12px; font-weight:bold;">
-            Total Deduction: ₹<span id="totalFeeText">0</span>
-        </div>
-        <div id="dynamicInputs"></div>
-        <button class="btn-join" onclick="confirmTeamJoin()">CONFIRM & JOIN</button>
-        <button onclick="closeModal()" style="width:100%; background:none; border:none; color:var(--red); font-weight:800; margin-top:12px; font-size:12px; cursor:pointer;">CANCEL</button>
-    </div>
-</div>
 
 <div class="header">
     <i class="fa-solid fa-arrow-left" onclick="history.back()"></i>
@@ -101,17 +75,18 @@
     </div>
 </div>
 
-<div class="room-card-white" id="roomInfoBox">
-    <div class="room-title-label"><i class="fa-solid fa-door-open" style="color:var(--p-green)"></i> Room Details</div>
-    <div class="room-grid" id="roomDetailsContent"></div>
-</div>
+<div id="regularUI">
+    <div class="room-card-white" id="roomInfoBox">
+        <div class="room-title-label" style="font-size:12px; font-weight:bold; margin-bottom:10px;"><i class="fa-solid fa-door-open" style="color:var(--p-green)"></i> Room Details</div>
+        <div class="room-grid" id="roomDetailsContent"></div>
+    </div>
 
-<div id="activeMatchUI">
     <div class="tabs">
         <div class="tab active" onclick="showTab('prize')">Prize Pool</div>
         <div class="tab" onclick="showTab('players')">Players</div>
         <div class="tab" onclick="showTab('rules')">Rules</div>
     </div>
+
     <div id="prizeSection"><div id="prizeList" style="background:white; margin:0 15px; border-radius:12px; border:1px solid #eee;"></div></div>
     <div id="playerSection" style="display:none;"><div id="playerList"></div></div>
     <div id="rulesSection" style="display:none; padding: 20px; background: white; margin: 0 15px; border-radius: 12px; border: 1px solid #eee;"><div id="dynamicRules"></div></div>
@@ -134,52 +109,52 @@ const db = firebase.database();
 const auth = firebase.auth();
 const matchId = new URLSearchParams(window.location.search).get('id');
 
-const defaultIcon = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-let currentUid = "", userGameName = "", currentBalance = 0, entryFee = 0, matchCategory = "", matchTeamType = "";
+auth.onAuthStateChanged(user => { if(!user) window.location.href = "login.html"; });
 
-auth.onAuthStateChanged(user => {
-    if(user) {
-        currentUid = user.uid;
-        db.ref("users/" + user.uid).on('value', snap => {
-            const data = snap.val();
-            if(data) {
-                userGameName = data.gameName || data.username || "Player";
-                let w = data.wallet;
-                currentBalance = (w && typeof w === 'object') ? (parseInt(w.deposit || 0) + parseInt(w.winnings || 0)) : parseInt(w || 0);
-            }
-        });
-    } else { window.location.href = "login.html"; }
-});
+if(matchId) {
+    db.ref('matches/' + matchId).on('value', snap => {
+        const data = snap.val(); if(!data) return;
+        
+        console.log("Match Status:", data.status); // Ithu console-il check cheyyan vendiyan
 
-function loadPlayers() {
-    const listDiv = document.getElementById('playerList');
-    listDiv.innerHTML = "<div style='text-align:center; padding:20px;'>Loading Players...</div>";
-    db.ref('matches/' + matchId + '/participants').on('value', snapshot => {
-        listDiv.innerHTML = "";
-        if(!snapshot.exists()) { listDiv.innerHTML = "<div style='text-align:center; padding:40px;'>No players yet.</div>"; return; }
-        snapshot.forEach(child => {
-            const p = child.val();
-            const teamInfo = p.teamInfo || null;
-            let html = `<div class="player-row"><div class="p-header"><img src="${defaultIcon}" class="player-img"><div class="p-user-name">${p.playerName}</div><div class="team-badge">${p.teamType || 'SOLO'}</div></div>`;
-            if(teamInfo && teamInfo.members) {
-                html += `<div class="squad-members-list">`;
-                teamInfo.members.forEach((m, idx) => { if(idx !== 0) html += `<span class="member-chip"><i class="fa fa-user" style="font-size:8px;"></i> ${m}</span>`; });
-                html += `</div>`;
-            }
-            html += `</div>`;
-            listDiv.innerHTML += html;
-        });
+        // --- STRICT COMPLETED CHECK ---
+        if(data.status === "completed") {
+            document.getElementById('winnerSection').style.display = "block";
+            document.getElementById('regularUI').style.display = "none";
+            document.getElementById('joinFooter').style.display = "none";
+            renderWinners(data.winners);
+        } else {
+            document.getElementById('winnerSection').style.display = "none";
+            document.getElementById('regularUI').style.display = "block";
+            document.getElementById('joinFooter').style.display = "block";
+        }
+
+        document.getElementById('mTitle').innerText = (data.category || "Tournament") + " (" + (data.teamType || "SOLO") + ")";
+        document.getElementById('mPrizeHeader').innerText = "₹" + (data.prize || 0);
+        document.getElementById('mThumb').src = data.thumbnail || "";
+        
+        // Rules Rendering
+        renderRules(data.category || "");
+
+        // ID/PASS Logic
+        const participants = data.participants || {};
+        const isJoined = participants[auth.currentUser.uid] ? true : false;
+        const roomContent = document.getElementById('roomDetailsContent');
+        if(isJoined) {
+            roomContent.innerHTML = `<div class="room-item-box"><div class="room-label-small">ID</div><div class="room-value-text">${data.roomId || "Pending"}</div></div><div class="room-item-box" style="margin-left:10px;"><div class="room-label-small">Pass</div><div class="room-value-text">${data.roomPass || "Pending"}</div></div>`;
+        } else {
+            roomContent.innerHTML = `<div class="room-locked-text"><i class="fa-solid fa-lock"></i> JOIN TO UNLOCK</div>`;
+        }
     });
 }
 
 function renderWinners(winners) {
     const container = document.getElementById('winnerListContainer');
-    if(!winners) { container.innerHTML = "<div style='color:#888; font-weight:bold; padding:20px;'>Winners Announcement Pending...</div>"; return; }
+    if(!winners) { container.innerHTML = "Pending..."; return; }
     let html = "";
     Object.keys(winners).forEach(rank => {
         let color = rank == 1 ? "var(--gold)" : rank == 2 ? "var(--silver)" : "var(--bronze)";
-        let icon = rank == 1 ? "fa-crown" : "fa-medal";
-        html += `<div style="display:flex; align-items:center; background:#f9f9f9; padding:12px; border-radius:10px; margin-bottom:10px; border-left:5px solid ${color}"><div style="width:35px; height:35px; background:${color}; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:12px;"><i class="fa-solid ${icon}"></i></div><div style="text-align:left;"><div style="font-size:10px; font-weight:900; color:#999;">RANK ${rank}</div><div style="font-size:15px; font-weight:800; color:#222;">${winners[rank]}</div></div></div>`;
+        html += `<div style="display:flex; align-items:center; background:#f9f9f9; padding:12px; border-radius:10px; margin-bottom:10px; border-left:5px solid ${color}"><div style="font-weight:900; margin-right:15px;">Rank ${rank}</div><div style="font-weight:800;">${winners[rank]}</div></div>`;
     });
     container.innerHTML = html;
 }
@@ -190,131 +165,12 @@ function renderRules(cat) {
     let rulesHTML = "";
     if(isCS) {
         const csRules = ["Tournament rule.", "Multiple accounts = Permanent Freeze.", "Zone pack : Strictly NOT allowed.", "Throwables (Grenades/Flash): Not allowed.", "Only mobile players allowed (No Emulators).", "Minimum level required: 40.", "Character skills & Gun attributes: OFF.", "POV Recording: Mandatory for every player.", "Room ID and Password shared at exact time. Start after 10 mins. No refund for late join.", "Contact customer support for any issues.", "Share your POV first to request opponent's.", "POV must be provided within 24 hours of request.", "Missed room join: No refund.", "Unregistered invites: Kicked immediately.", "Hacks/Glitch: Permanent ban.", "Result: Declared within 1 hour."];
-        rulesHTML = `<div style="font-weight:900; color:var(--p-green); font-size:11px; margin-bottom:12px; text-transform:uppercase;">CS Rules</div>`;
         csRules.forEach((r, i) => { rulesHTML += `<div class="rule-item"><div class="rule-num">${i+1}</div><div class="rule-text">${r}</div></div>`; });
     } else {
         const brRules = ["BR Survival with Per Kill points system.", "No Teaming: Disqualification if caught.", "Mobile only. No emulators/panels.", "Minimum level 40 required to join.", "Unregistered invites = Kick without refund.", "POV recording mandatory from room entry.", "Provide POV within 3 hours if requested.", "No refund for missed join or kick.", "Hacks/Cheats: Permanent ban & wallet freeze.", "Results declared within 1 hour.", "Plain text names only. No stylish fonts.", "Stay in joined slot. No switching.", "ID & Pass shared 5 mins before start.", "If duo or squad match, only enter with squad entry."];
-        rulesHTML = `<div style="font-weight:900; color:var(--p-green); font-size:11px; margin-bottom:12px; text-transform:uppercase;">BR Rules</div>`;
         brRules.forEach((r, i) => { rulesHTML += `<div class="rule-item"><div class="rule-num">${i+1}</div><div class="rule-text">${r}</div></div>`; });
     }
     rulesDiv.innerHTML = rulesHTML;
-}
-
-if(matchId) {
-    db.ref('matches/' + matchId).on('value', snap => {
-        const data = snap.val(); if(!data) return;
-        
-        // --- HIDE EVERYTHING EXCEPT WINNERS IF COMPLETED ---
-        const isCompleted = data.status === "completed";
-        if(isCompleted) {
-            document.getElementById('winnerSection').style.display = "block";
-            document.getElementById('activeMatchUI').style.display = "none";
-            document.getElementById('roomInfoBox').style.display = "none";
-            document.getElementById('joinFooter').style.display = "none";
-            renderWinners(data.winners);
-        } else {
-            document.getElementById('winnerSection').style.display = "none";
-            document.getElementById('activeMatchUI').style.display = "block";
-            document.getElementById('roomInfoBox').style.display = "block";
-            document.getElementById('joinFooter').style.display = "block";
-        }
-
-        matchCategory = data.category || "Tournament";
-        matchTeamType = data.teamType || "SOLO";
-        entryFee = parseInt(data.entry || 0);
-        document.getElementById('mTitle').innerText = `${matchCategory} (${matchTeamType})`;
-        document.getElementById('mPrizeHeader').innerText = "₹" + (data.prize || 0);
-        document.getElementById('mThumb').src = data.thumbnail || "";
-        
-        // Date Display
-        const rawTime = data.time || ""; 
-        let finalDateDisplay = "PENDING";
-        if (rawTime) {
-            let d = rawTime.includes('T') ? new Date(rawTime) : new Date(data.date + " " + rawTime);
-            if (!isNaN(d.getTime())) {
-                const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-                let h = d.getHours(), m = d.getMinutes(), ampm = h >= 12 ? 'PM' : 'AM';
-                h = h % 12 || 12;
-                finalDateDisplay = `${d.getDate()} ${months[d.getMonth()]} ${h}:${m < 10 ? '0'+m : m} ${ampm}`;
-            }
-        }
-        document.getElementById('mDate').innerText = finalDateDisplay;
-
-        // Joined logic
-        const participants = data.participants || {};
-        const isJoined = participants[currentUid] ? true : false;
-        const joinedCount = Object.keys(participants).length;
-        document.getElementById('headerTitle').innerText = `JOINED ${joinedCount}/${data.max || 48}`;
-
-        const roomContent = document.getElementById('roomDetailsContent');
-        if(isJoined) {
-            roomContent.innerHTML = `<div class="room-item-box"><div class="room-label-small">Room ID</div><div class="room-value-text">${data.roomId || "Pending"}</div></div><div class="room-item-box" style="margin-left:10px;"><div class="room-label-small">Password</div><div class="room-value-text">${data.roomPass || "Pending"}</div></div>`;
-        } else {
-            roomContent.innerHTML = `<div class="room-locked-text"><i class="fa-solid fa-lock"></i> JOIN TO UNLOCK ROOM</div>`;
-        }
-
-        const jBtn = document.getElementById('joinBtn');
-        if(isJoined) { jBtn.innerText = "JOINED"; jBtn.disabled = true; jBtn.style.background = "#888"; }
-        else { jBtn.innerText = "JOIN NOW - ₹" + entryFee; jBtn.disabled = false; }
-
-        let pl = "";
-        if(data.prizeDist) {
-            data.prizeDist.split(',').forEach(i => {
-                let p = i.split(':');
-                if(p[0] && p[1]) pl += `<div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #f8f8f8; font-weight:bold; font-size:14px;"><span>${p[0]}</span><span style="color:var(--p-green)">${p[1]}</span></div>`;
-            });
-        }
-        document.getElementById('prizeList').innerHTML = pl || "<div style='padding:15px; text-align:center; color:#999;'>Standard Prize Pool</div>";
-    });
-}
-
-function handleJoin() {
-    if(currentBalance < entryFee) return alert("Insufficient Balance!");
-    if(matchTeamType === "SQUAD" || matchTeamType === "DUO") {
-        const count = matchTeamType === "SQUAD" ? 4 : 2;
-        document.getElementById('mTypeTitle').innerText = matchTeamType;
-        document.getElementById('totalFeeText').innerText = entryFee * count;
-        let html = `<div class="input-box"><label>PLAYER 1 (LEADER)</label><input type="text" value="${userGameName}" readonly style="background:#eee;"></div>`;
-        for(let i=2; i<=count; i++) html += `<div class="input-box"><label>PLAYER ${i} NAME & ID</label><input type="text" id="p${i}Input" placeholder="Name - ID"></div>`;
-        document.getElementById('dynamicInputs').innerHTML = html;
-        document.getElementById('teamModal').style.display = 'flex';
-    } else { if(confirm("Join Solo for ₹" + entryFee + "?")) executeJoin(entryFee, null); }
-}
-
-function closeModal() { document.getElementById('teamModal').style.display = 'none'; }
-
-function confirmTeamJoin() {
-    const count = matchTeamType === "SQUAD" ? 4 : 2;
-    let members = [userGameName];
-    for(let i=2; i<=count; i++) {
-        let val = document.getElementById(`p${i}Input`).value.trim();
-        if(!val) return alert(`Enter Player ${i} details!`);
-        members.push(val);
-    }
-    const teamFee = entryFee * count;
-    if(currentBalance < teamFee) return alert("Insufficient balance!");
-    executeJoin(teamFee, { members: members, teamId: "T-" + Date.now().toString().slice(-4) });
-}
-
-function executeJoin(fee, teamInfo) {
-    const userRef = db.ref('users/' + currentUid + '/wallet');
-    userRef.transaction(w => {
-        let dep = (w && w.deposit) ? parseInt(w.deposit) : 0, win = (w && w.winnings) ? parseInt(w.winnings) : 0;
-        if((dep + win) < fee) return;
-        let rem = fee;
-        if (dep >= rem) dep -= rem; else { rem -= dep; dep = 0; win -= rem; }
-        return { deposit: dep, winnings: win };
-    }, (err, committed) => {
-        if(committed) {
-            const updates = {};
-            updates[`matches/${matchId}/participants/${currentUid}`] = { uid: currentUid, playerName: userGameName, teamType: matchTeamType, teamInfo: teamInfo, joinedAt: Date.now() };
-            db.ref().update(updates).then(() => {
-                db.ref(`matches/${matchId}/joined`).transaction(c => (c || 0) + 1);
-                alert("Joined Successfully! 🔥");
-                location.reload();
-            });
-        }
-    });
 }
 
 function showTab(type) {
@@ -323,8 +179,6 @@ function showTab(type) {
     document.getElementById('prizeSection').style.display = type === 'prize' ? 'block' : 'none';
     document.getElementById('playerSection').style.display = type === 'players' ? 'block' : 'none';
     document.getElementById('rulesSection').style.display = type === 'rules' ? 'block' : 'none';
-    if(type === 'players') loadPlayers();
-    if(type === 'rules') renderRules(matchCategory);
 }
 </script>
 </body>
