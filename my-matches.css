@@ -1,0 +1,110 @@
+:root { 
+    --p-green: #0fa958; 
+    --bg-light: #f9f9f9; 
+    --white: #ffffff; 
+    --p-red: #ff5722;
+}
+
+body { 
+    margin: 0; 
+    font-family: 'Segoe UI', sans-serif; 
+    background: var(--bg-light); 
+    padding-bottom: 50px; 
+}
+
+/* Loader */
+#loader { position: fixed; inset: 0; background: #fff; display: flex; justify-content: center; align-items: center; z-index: 10000; }
+.spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid var(--p-green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Header & Tabs */
+.top-bar { 
+    display: flex; 
+    align-items: center; 
+    padding: 15px 20px; 
+    background: white; 
+    font-weight: 900; 
+    border-bottom: 1px solid #eee; 
+    position: sticky; 
+    top: 0; 
+    z-index: 100; 
+    text-transform: uppercase;
+}
+.top-bar i { margin-right: 15px; color: var(--p-green); font-size: 18px; }
+
+.tab-navigator { 
+    display: flex; 
+    background: white; 
+    border-bottom: 1px solid #f0f0f0; 
+    position: sticky; 
+    top: 52px; 
+    z-index: 99; 
+}
+.tab { 
+    flex: 1; 
+    text-align: center; 
+    padding: 14px 0; 
+    font-size: 11px; 
+    font-weight: 800; 
+    color: #999; 
+    text-transform: uppercase; 
+    border-bottom: 3px solid transparent; 
+}
+.tab.active { 
+    color: var(--p-green); 
+    border-bottom: 3px solid var(--p-green); 
+}
+
+.matches-container { padding: 15px; }
+
+/* Match Card Styles */
+.match-card { 
+    background: white; 
+    border-radius: 12px; 
+    padding: 15px; 
+    margin-bottom: 15px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06); 
+    border-top: 4px solid var(--p-red); 
+}
+
+.btn-status-box {
+    background: #6c757d; 
+    color: white; 
+    padding: 10px 18px; 
+    border-radius: 8px; 
+    font-size: 12px; 
+    font-weight: 900; 
+    text-transform: uppercase;
+    border: none;
+}
+/* Animation Smoothness */
+#matchContent {
+    will-change: transform, opacity;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.tab {
+    transition: all 0.3s ease-in-out;
+}
+/* Card entrance animation */
+@keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.match-card {
+    animation: slideIn 0.4s ease forwards;
+}
+
+/* Swipe exit animation classes */
+.slide-left-out {
+    transform: translateX(-100%) !important;
+    opacity: 0 !important;
+    transition: 0.3s ease-in-out;
+}
+
+.slide-right-out {
+    transform: translateX(100%) !important;
+    opacity: 0 !important;
+    transition: 0.3s ease-in-out;
+}

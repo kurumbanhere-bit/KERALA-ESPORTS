@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Withdraw Money - KL ESPORTS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="withdraw.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<div class="top-bar">
+    <i class="fa-solid fa-arrow-left" onclick="location.href='wallet.html'"></i>
+    <b>Withdraw Money</b>
+</div>
+
+<div class="container">
+    <div class="card">
+        <div class="balance-box">
+            <span>Withdrawable Winnings</span>
+            <h2 id="walletBal">₹0</h2>
+        </div>
+
+        <div class="input-group">
+            <label>Amount to Withdraw</label>
+            <input type="number" id="withdrawAmt" placeholder="Minimum ₹50" min="50">
+            <div class="note"><i class="fa-solid fa-circle-info"></i> Min withdrawal: ₹50 | Max: No limit</div>
+        </div>
+
+        <div class="input-group">
+            <label>Your UPI ID</label>
+            <input type="text" id="upiId" placeholder="e.g. 9876543210@ybl">
+            <div class="note"><i class="fa-solid fa-triangle-exclamation"></i> Careful! Wrong UPI ID leads to payment failure.</div>
+        </div>
+
+        <div id="loader" style="display: none;">
+            <div class="spinner"></div> <span style="font-size: 12px; color: #888; margin-left: 5px;">Processing Request...</span>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <button class="withdraw-btn" id="subBtn" onclick="requestWithdraw()">WITHDRAW NOW</button>
+</div>
+
+<script src="withdraw.js"></script>
+</body>
+</html>
