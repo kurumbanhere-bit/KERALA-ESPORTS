@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Match History - KERALA ESPORTS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="match-history.css">
+</head>
+<body class="light-theme">
+
+    <div class="header">
+        <div class="header-left">
+            <i class="fa-solid fa-arrow-left" onclick="window.history.back()"></i>
+            <span>My Statistics</span>
+        </div>
+        <div class="theme-switch" onclick="toggleTheme()">
+            <i id="theme-icon" class="fa-solid fa-moon"></i>
+        </div>
+    </div>
+
+    <div class="table-header-labels">
+        <span class="col-id"># MATCH ID</span>
+        <span class="col-info">INFO</span>
+        <div class="col-stats-group">
+            <span class="col-paid">ENTRY</span>
+            <span class="col-won">WON</span>
+        </div>
+    </div>
+
+    <div id="match-list" class="match-container">
+        <div class="loading-state">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <p>Loading your matches...</p>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="match-history.js"></script>
+</body>
+</html>
