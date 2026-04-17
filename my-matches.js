@@ -149,7 +149,7 @@ function renderMatches(matches) {
                 </div>
                 
                 <div style="text-align:center;">
-                    <img src="${match.thumbnail || 'img/default.png'}" style="width:120px; height:120px; border-radius:12px; object-fit:cover; border: 1px solid #f0f0f0;">
+                    <img src="${match.image || match.thumbnail || 'https://via.placeholder.com/120'}" style="width:120px; height:120px; border-radius:12px; object-fit:cover;">
                     <div style="font-size:11px; font-weight:900; margin-top:5px; color:#333;">${formattedTime}</div>
                 </div>
             </div>
