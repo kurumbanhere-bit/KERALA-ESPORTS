@@ -87,7 +87,7 @@ firebase.auth().onAuthStateChanged(user => {
 function goToWithdraw() {
     // If winnings is less than 50, show error
     if (currentWinnings < 50) {
-        alert("Winnings minimum ₹50 undenghil mathrame withdraw cheyyan pattukayulloo.");
+        alert("Minimum withdraw 50₹.");
     } else {
         // If 50 or more, go to the withdraw page
         window.location.href = "withdraw.html";
