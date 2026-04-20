@@ -2,75 +2,94 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task - Claim Reward</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tasks - KERALA ESPORTS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
     <style>
+        :root {
+            --p-green: #27ae60;
+            --blue: #3498db;
+            --red: #e74c3c;
+            --bg: #f4f4f4;
+        }
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background-color: var(--bg);
             margin: 0;
-            visibility: hidden; /* Auth check kazhiyunnath vare hide cheyyan */
-            opacity: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            visibility: hidden; opacity: 0;
             transition: opacity 0.5s;
         }
+        .top-bar {
+            width: 100%;
+            background: #fff;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky; top: 0;
+        }
+        .top-bar i { font-size: 20px; margin-right: 15px; cursor: pointer; }
+        .container { padding: 20px; width: 90%; max-width: 400px; }
+        
         .task-card {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             text-align: center;
-            width: 300px;
+            border-left: 5px solid var(--p-green);
         }
-        h2 { color: #333; }
-        .reward-val {
-            font-size: 24px;
-            color: #27ae60;
+        .reward-amt {
+            font-size: 28px;
+            color: var(--p-green);
             font-weight: bold;
             margin: 10px 0;
         }
-        button {
-            background-color: #3498db;
+        #claim-btn {
+            background-color: var(--blue);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:disabled {
-            background-color: #bdc3c7;
-            cursor: not-allowed;
-        }
-        #message {
-            margin-top: 15px;
-            font-size: 14px;
+            padding: 12px 30px;
+            border-radius: 8px;
             font-weight: bold;
+            width: 100%;
+            cursor: pointer;
         }
+        #claim-btn:disabled { background-color: #ccc; }
+        #no-tasks { display: none; text-align: center; margin-top: 50px; color: #777; }
     </style>
 </head>
 <body>
 
-<div class="task-card">
-    <h2>Daily Task</h2>
-    <p>Sign Up Reward</p>
-    <div class="reward-val">10 Coins</div>
-    <button id="claim-btn" onclick="claimReward()">Claim</button>
-    <p id="message"></p>
-    <br>
-    <button onclick="window.location.href='dashboard.html'" style="background: #95a5a6; font-size: 12px;">Back</button>
+<div class="top-bar">
+    <i class="fa-solid fa-arrow-left" onclick="history.back()"></i>
+    <span>TASKS</span>
+</div>
+
+<div class="container">
+    <div class="task-card" id="reward-card">
+        <h3 style="margin:0;">Welcome Bonus</h3>
+        <p style="color:#666; font-size:14px;">Sign up reward for new users</p>
+        <div class="reward-amt">₹10</div>
+        <button id="claim-btn" onclick="claimReward()">CLAIM NOW</button>
+        <p id="msg" style="font-size:12px; margin-top:10px;"></p>
+    </div>
+
+    <div id="no-tasks">
+        <i class="fa-solid fa-list-check" style="font-size: 40px; color: #ccc;"></i>
+        <p>No tasks available for now!</p>
+    </div>
 </div>
 
 <script>
-    // 1. Firebase Configuration (Nee thanna athe config)
     const firebaseConfig = {
         apiKey: "AIzaSyAo9KNsWnq2AgoCGzPuCsg7YCbuw8-Apuo",
         authDomain: "studio-4988500581-b9772.firebaseapp.com",
@@ -82,88 +101,81 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    const db = firebase.database();
+    let isProcessing = false;
 
-    // 2. Auth Check & UI Reveal
     firebase.auth().onAuthStateChanged(user => {
         if (user) {
-            document.body.style.visibility = "visible";
-            document.body.style.opacity = "1";
-            checkPreviousClaim(user.uid);
+            checkIfClaimed(user.uid);
         } else {
-            window.location.replace("index.html");
+            window.location.href = "login.html";
         }
     });
 
-    // 3. Ithu mumb claim cheythittundo ennu check cheyyunnu
-    function checkPreviousClaim(uid) {
-        const dbRef = database.ref('rewards/' + uid);
-        dbRef.once('value', (snapshot) => {
-            if (snapshot.exists()) {
-                updateUIAlreadyClaimed();
+    function checkIfClaimed(uid) {
+        db.ref('rewards/' + uid).once('value', snapshot => {
+            if (snapshot.exists() && snapshot.val().rewardClaimed) {
+                hideTask();
+            } else {
+                document.body.style.visibility = "visible";
+                document.body.style.opacity = "1";
             }
         });
     }
-function claimReward() {
-    const user = firebase.auth().currentUser;
-    const btn = document.getElementById("claim-btn");
-    const msg = document.getElementById("message");
 
-    if (!user) return;
+    function claimReward() {
+        const user = firebase.auth().currentUser;
+        if (!user || isProcessing) return;
 
-    const rewardRef = database.ref('rewards/' + user.uid);
-    const walletRef = database.ref('users/' + user.uid + '/wallet');
+        isProcessing = true;
+        const btn = document.getElementById("claim-btn");
+        btn.disabled = true;
+        btn.innerText = "Processing...";
 
-    // 1. Adyam reward mumb eduthittundo ennu check cheyyunnu
-    rewardRef.once('value', (snapshot) => {
-        if (snapshot.exists()) {
-            updateUIAlreadyClaimed();
-        } else {
-            // 2. Wallet-ile winnings update cheyyunnu
-            walletRef.once('value', (walletSnapshot) => {
-                let data = walletSnapshot.val();
-                let currentWin = 0;
+        const rewardRef = db.ref('rewards/' + user.uid);
+        const walletRef = db.ref('users/' + user.uid + '/wallet');
 
-                // Ninte wallet structure anusarich winnings edukkunnu
-                if (data && data.winnings) {
-                    currentWin = Number(data.winnings);
-                }
+        // Secure check before updating
+        rewardRef.once('value').then(snap => {
+            if (snap.exists() && snap.val().rewardClaimed) {
+                alert("Already Claimed!");
+                hideTask();
+                return;
+            }
 
-                // Puthiya balance (Pazhayath + 10)
+            walletRef.once('value').then(walletSnap => {
+                let data = walletSnap.val();
+                let currentWin = (data && data.winnings) ? Number(data.winnings) : 0;
                 let newWin = currentWin + 10;
 
-                // Wallet-il update cheyyunnu, koode rewards section-il mark cheyyunnu
-                const updates = {};
+                let updates = {};
                 updates['users/' + user.uid + '/wallet/winnings'] = newWin;
                 updates['rewards/' + user.uid] = {
                     rewardClaimed: true,
-                    amount: 10,
-                    date: new Date().toISOString()
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
                 };
 
-                // Database-ilekku push cheyyunnu
-                database.ref().update(updates).then(() => {
-                    alert("Congrats! ₹10 ninte Winnings-ilekku add cheythu.");
-                    updateUIAlreadyClaimed();
-                }).catch((error) => {
-                    msg.style.color = "red";
-                    msg.innerText = "Error: " + error.message;
+                db.ref().update(updates).then(() => {
+                    alert("₹10 Added to Winnings!");
+                    hideTask();
+                }).catch(err => {
+                    isProcessing = false;
+                    btn.disabled = false;
+                    btn.innerText = "CLAIM NOW";
+                    alert("Error: " + err.message);
                 });
             });
-        }
-    });
-}
+        });
+    }
 
-
-    function updateUIAlreadyClaimed() {
-        const btn = document.getElementById("claim-btn");
-        const msg = document.getElementById("message");
-        btn.disabled = true;
-        btn.innerText = "Claimed";
-        msg.style.color = "#27ae60";
-        msg.innerText = "You have already collected this reward!";
+    function hideTask() {
+        document.getElementById("reward-card").style.display = "none";
+        document.getElementById("no-tasks").style.display = "block";
+        document.body.style.visibility = "visible";
+        document.body.style.opacity = "1";
     }
 </script>
 
 </body>
 </html>
+
