@@ -228,17 +228,25 @@ if (rulesSection && match.rules) {
             roomContent.innerHTML = `<div style="color:#ff5722; text-align:center; width:100%; font-weight:bold;">JOIN TO SEE ROOM DETAILS</div>`;
         }
 
-        const playerList = document.getElementById('playerList');
-        let plhtml = `<div style="padding:10px;">`;
+                        const playerList = document.getElementById('playerList');
+        const joinedClass = isJoined ? 'is-joined' : ''; 
+
+        let plhtml = `<div style="padding:10px;" class="${joinedClass}">`;
+
         Object.values(participants).forEach((p, index) => {
+            // Join cheythittillenkil blur-inu pakaram ee text kaanikkan:
+            const nameToDisplay = isJoined ? p.playerName : "JOIN TO VISIBLE";
+            const idToDisplay = isJoined ? (p.gameID || 'N/A') : "HIDDEN";
+
             plhtml += `
                 <div style="display:flex; align-items:center; justify-content:space-between; background:#fff; padding:12px; margin-bottom:8px; border-radius:10px; border:1px solid #f0f0f0;">
                     <div style="display:flex; align-items:center; gap:12px;">
                         <b style="color:#ff5722; width:20px; font-size:12px;">${index + 1}</b>
                         <img src="${p.profilePic || 'https://www.w3schools.com/howto/img_avatar.png'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-                        <div>
-                            <span style="font-weight:800; color:#333; font-size:13px; display:block;">${p.playerName}</span>
-                            <small style="color:#888; font-size:10px;">ID: ${p.gameID || 'N/A'}</small>
+                        
+                        <div class="player-blur">
+                            <span style="font-weight:800; color:#333; font-size:13px; display:block;">${nameToDisplay}</span>
+                            <small style="color:#888; font-size:10px;">ID: ${idToDisplay}</small>
                         </div>
                     </div>
                 </div>`;
@@ -365,3 +373,4 @@ window.showTab = function(t, el) {
     const target = document.getElementById(t + 'Section');
     if(target) target.style.display = 'block';
 }
+
