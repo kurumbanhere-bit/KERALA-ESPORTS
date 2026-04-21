@@ -149,7 +149,15 @@
 <div class="bottom-nav">
     <div class="active"><i class="fa-solid fa-house"></i>Home</div>
     <div onclick="location.href='my-matches.html'"><i class="fa-solid fa-gamepad"></i>My Matches</div>
-    <div onclick="location.href='task.html'"><i class="fa-solid fa-tasks"></i>Tasks</div>
+    
+    <div onclick="location.href='task.html'" style="position: relative;">
+        <div id="taskHint" style="display:none; position: absolute; top: -45px; background: #ff5722; color: white; padding: 6px 10px; border-radius: 8px; font-size: 11px; white-space: nowrap; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            Claim ₹10 🎁
+            <div style="position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #ff5722;"></div>
+        </div>
+        <i class="fa-solid fa-tasks"></i>Tasks
+    </div>
+    
     <div onclick="location.href='wallet.html'"><i class="fa-solid fa-wallet"></i>Wallet</div>
     <div onclick="location.href='profile.html'"><i class="fa-solid fa-user"></i>Profile</div>
 </div>
@@ -157,3 +165,4 @@
 <script src="dashboard.js" defer></script>
 </body>
 </html>
+
