@@ -268,37 +268,61 @@ async function handleJoin() {
     const jBtn = document.getElementById('joinBtn');
     const fee = Number(entryFee) || 0;
 
-    // 1. 🔥 SECURITY & SLOT CHECK
-    // Database-il ninnu latest slot details edukkunnu
-    const matchSnap = await db.ref(`matches/${matchId}`).once('value');
-    if (!matchSnap.exists()) return alert("Match not found!");
+    // 1. 🔥 DOUBLE TAP PREVENTION
+    // Button click cheytha udane disable aakkunnu
+    if (jBtn.disabled) return; 
+    jBtn.disabled = true; 
+    jBtn.innerText = "PROCESSING...";
 
-    const matchData = matchSnap.val();
-    const participants = matchData.participants || {};
-    const joinedCount = Object.keys(participants).length;
-    
-    // Admin panel-il ninnu varunna maxSlots match cheyyunnu
-    const maxSlots = parseInt(matchData.maxSlots) || parseInt(matchData.max) || 48;
-
-    // Check if slots are full
-    if (joinedCount >= maxSlots) {
-        alert("SLOT FULL.");
-        return;
-    }
-
-    // 2. USER CHECKS
-    if (currentBalance < fee) return alert("Insufficient Balance!");
-    if (!userGameID || userGameID === "N/A" || userGameID === "") {
-        return alert("please ubdate your game id!");
-    }
-
-    // 3. CONFIRM & START TRANSACTION
-    if (confirm(`Join match for ₹${fee}?`)) {
-        if (jBtn) { 
-            jBtn.innerText = "JOINING..."; 
-            jBtn.disabled = true; 
+    try {
+        // 2. LATEST DATA FETCH
+        const matchSnap = await db.ref(`matches/${matchId}`).once('value');
+        if (!matchSnap.exists()) {
+            alert("Match not found!");
+            resetJoinButton(jBtn, fee);
+            return;
         }
 
+        const matchData = matchSnap.val();
+        const participants = matchData.participants || {};
+
+        // 3. ALREADY JOINED CHECK (Double Safety)
+        if (participants[currentUid]) {
+            alert("You are already in this match!");
+            jBtn.innerText = `JOINED - ₹${fee}`;
+            jBtn.style.background = "#ccc";
+            return;
+        }
+
+        const joinedCount = Object.keys(participants).length;
+        const maxSlots = parseInt(matchData.maxSlots) || parseInt(matchData.max) || 48;
+
+        if (joinedCount >= maxSlots) {
+            alert("SLOT FULL.");
+            resetJoinButton(jBtn, fee);
+            return;
+        }
+
+        // 4. USER CHECKS
+        if (currentBalance < fee) {
+            alert("Insufficient Balance!");
+            resetJoinButton(jBtn, fee);
+            return;
+        }
+
+        if (!userGameID || userGameID === "N/A" || userGameID === "") {
+            alert("Please update your game ID!");
+            resetJoinButton(jBtn, fee);
+            return;
+        }
+
+        // 5. CONFIRMATION
+        if (!confirm(`Join match for ₹${fee}?`)) {
+            resetJoinButton(jBtn, fee);
+            return;
+        }
+
+        // 6. TRANSACTION LOGIC
         const walletRef = db.ref('users/' + currentUid + '/wallet');
         
         walletRef.transaction((wallet) => {
@@ -307,9 +331,8 @@ async function handleJoin() {
             let dep = Number(wallet.deposit) || 0;
             let win = Number(wallet.winnings) || 0;
             
-            if ((dep + win) < fee) return; // Inadequate balance
+            if ((dep + win) < fee) return; // Logic double check
 
-            // Deduct from Deposit first, then Winnings
             if (dep >= fee) { 
                 dep -= fee; 
             } else { 
@@ -324,13 +347,10 @@ async function handleJoin() {
 
         }, (err, committed) => {
             if (err || !committed) {
-                alert("Transaction Failed! Please try again.");
-                if (jBtn) { 
-                    jBtn.innerText = `JOIN NOW - ₹${fee}`; 
-                    jBtn.disabled = false; 
-                }
+                alert("Transaction Failed! Try again.");
+                resetJoinButton(jBtn, fee);
             } else {
-                // 4. 🔥 SUCCESS: ADD TO PARTICIPANTS & HISTORY
+                // 7. SUCCESS: UPDATE DATABASE
                 const joinData = { 
                     uid: currentUid, 
                     playerName: userGameName, 
@@ -339,10 +359,7 @@ async function handleJoin() {
                     joinedAt: Date.now() 
                 };
 
-                // Add to Match Participants
                 db.ref(`matches/${matchId}/participants/${currentUid}`).set(joinData).then(() => { 
-                    
-                    // Add to User's Joined History
                     db.ref(`user_history/${currentUid}/${matchId}`).set({
                         matchId: matchId,
                         matchTitle: `Free Fire - ${matchData.category}`, 
@@ -352,15 +369,24 @@ async function handleJoin() {
                     });
 
                     alert("Joined Successfully! 🔥"); 
-                    if (jBtn) {
-                        jBtn.innerText = `JOINED - ₹${fee}`;
-                        jBtn.disabled = true;
-                        jBtn.style.background = "#ccc";
-                    }
+                    jBtn.innerText = `JOINED - ₹${fee}`;
+                    jBtn.disabled = true;
+                    jBtn.style.background = "#ccc";
                 });
             }
         });
+
+    } catch (error) {
+        console.error(error);
+        resetJoinButton(jBtn, fee);
     }
+}
+
+// Button reset cheyyanulla helper function
+function resetJoinButton(btn, fee) {
+    btn.disabled = false;
+    btn.innerText = `JOIN NOW - ₹${fee}`;
+    btn.style.background = "#ff5722";
 }
 
 window.showTab = function(t, el) {
@@ -373,3 +399,4 @@ window.showTab = function(t, el) {
     const target = document.getElementById(t + 'Section');
     if(target) target.style.display = 'block';
 }
+
