@@ -203,3 +203,21 @@ function joinMatch(id, fee) {
     sessionStorage.setItem("pending_join_id", id); 
     window.location.href = `card.html?id=${id}&fee=${fee}`; 
 }
+// Dashboard-ന്റെ ഏറ്റവും താഴെ ഇത് പേസ്റ്റ് ചെയ്യുക
+setTimeout(() => {
+    const hint = document.getElementById('taskHint');
+    if (hint) {
+        hint.style.display = 'block';
+        
+        // ഇത് ബോക്സിനെ ഒന്ന് തുള്ളി കളിക്കാൻ സഹായിക്കും (Animation)
+        hint.animate([
+            { transform: 'translateY(0px)' },
+            { transform: 'translateY(-5px)' },
+            { transform: 'translateY(0px)' }
+        ], {
+            duration: 1500,
+            iterations: Infinity
+        });
+    }
+}, 7000); // 7000 എന്നത് 7 സെക്കന്റ് ആണ് (Splash screen കഴിഞ്ഞു വരാൻ)
+
