@@ -236,4 +236,34 @@ setTimeout(() => {
         });
     }
 }, 7000); // 7000 എന്നത് 7 സെക്കന്റ് ആണ് (Splash screen കഴിഞ്ഞു വരാൻ)
+// --- NOTIFICATION LOGIC START ---
+const messaging = firebase.messaging();
+
+function setupNotifications() {
+    Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+            messaging.getToken({ 
+                vapidKey: 'BF1VzIp_vFRHdstsPvZSAO7WYr2JJalmeuSc1Mesr5EKYJm3iRh29tXU9uwa1BfoGExiFQLBAGS_kHyVKwi6z04' 
+            })
+            .then((currentToken) => {
+                if (currentToken) {
+                    const user = firebase.auth().currentUser;
+                    if(user) {
+                        firebase.database().ref('users/' + user.uid).update({
+                            fcmToken: currentToken
+                        });
+                    }
+                }
+            }).catch((err) => console.log('Token Error:', err));
+        }
+    });
+}
+
+// Ith nerathe ulla auth.onAuthStateChanged-inte ullil iduka athava puthiyathayi thazhe kodukkuka
+firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+        setupNotifications();
+    }
+});
+// --- NOTIFICATION LOGIC END ---
 
